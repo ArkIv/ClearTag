@@ -33,6 +33,9 @@ chrome.webRequest.onSendHeaders.addListener(function(details){
 //});
 
 // globalClass_ET
+// git
+// git remote add origin https://github.com/ArkIv/ClearTag.git
+// git push -u origin master
 
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
