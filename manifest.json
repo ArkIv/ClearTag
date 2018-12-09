@@ -7,12 +7,12 @@
 
   "browser_action": {
     "default_icon": {
-	"128":"tomas-arad-heart (128).png",
-	"64":"tomas-arad-heart (64).png",
-	"48":"tomas-arad-heart (48).png",
-	"32":"tomas-arad-heart (32).png",
-	"19":"tomas-arad-heart (19).png",
-	"16":"tomas-arad-heart (16).png"
+	"128":"icon/tomas-arad-heart (128).png",
+	"64":"icon/tomas-arad-heart (64).png",
+	"48":"icon/tomas-arad-heart (48).png",
+	"32":"icon/tomas-arad-heart (32).png",
+	"19":"icon/tomas-arad-heart (19).png",
+	"16":"icon/tomas-arad-heart (16).png"
 	},
     "default_popup": "popup.html"
   },
