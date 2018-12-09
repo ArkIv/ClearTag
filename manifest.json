@@ -21,7 +21,7 @@
    "webRequest",
     "activeTab",
     "storage",
-	"*://tv.yandex.ru/*"
+	  "*://tv.yandex.ru/*"
   ],
    "background": {
         "scripts": ["background.js"],
