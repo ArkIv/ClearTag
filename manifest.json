@@ -18,7 +18,7 @@
   },
   "permissions": [
     "tabs",
-   "webRequest",
+    "webRequest",
     "activeTab",
     "storage",
 	  "*://tv.yandex.ru/*"
