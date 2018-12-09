@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+
+  "name": "Мое приложение удаляем баннеры",
+  "description": "Это приложение удаляет банеры с теле программы Яндекс.",
+  "version": "5.0",
+
+  "browser_action": {
+    "default_icon": {
+	"128":"tomas-arad-heart (128).png",
+	"64":"tomas-arad-heart (64).png",
+	"48":"tomas-arad-heart (48).png",
+	"32":"tomas-arad-heart (32).png",
+	"19":"tomas-arad-heart (19).png",
+	"16":"tomas-arad-heart (16).png"
+	},
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "tabs",
+   "webRequest",
+    "activeTab",
+    "storage",
+	"*://tv.yandex.ru/*"
+  ],
+   "background": {
+        "scripts": ["background.js"],
+        "persistent": true
+    }
+}
