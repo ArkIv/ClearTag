@@ -1,3 +1,4 @@
+  // перетянем кнопку с трансляцией каналов
   var but = document.getElementsByClassName("button_broadcasting");
   if(but[0]){
   var kuda = document.getElementsByClassName("filters__title-wrapper");
@@ -23,7 +24,6 @@ function removeTags(){
 		 u[0].parentNode.removeChild(u[0]);
 	   }
   
-  
   console.log("очистка яндекс tv");
 
   // перестраиваем
@@ -39,7 +39,7 @@ function removeTags(){
            for(x = 0; x < items.length; x++) {
            chunk[0].insertBefore(items[x],combo[0]);
           }
-		  combo[0].style.display = 'none';
+		  combo[0].style.display = 'none'; // если удалять то не успевает чтото гдетто
 		 //setTimeout(function(){ combo[0].remove()},1000);
 	  }
     }

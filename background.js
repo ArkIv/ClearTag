@@ -1,26 +1,24 @@
 chrome.webRequest.onSendHeaders.addListener(function(details){
-//   console.log(details.url);
-//	alert(details.url);
-	var script = '\
-  var u = document.getElementsByClassName("super-banner");\
-  if(u[0])u[0].remove();\
-  u = document.getElementsByClassName("grid-chunk__column-box");\
-  if(u[0])u[0].remove();\
-  u = document.getElementsByClassName("main-controller__adv-bottom");\
-  if(u[0])u[0].remove();\
-    u = document.getElementsByClassName("footer");\
-  if(u[0])u[0].remove();\
-    u = document.getElementsByClassName("header");\
-  if(u[0])u[0].remove();\
-  u = document.getElementsByClassName("recommended-top");\
-  if(u[0])u[0].remove();\
-  console.log("очистка яндекс tv");';
-//	chrome.tabs.executeScript({
-//    code: script
-//  });
   chrome.tabs.executeScript(null, {file: "deleteclasses.js"});
   
 }, {urls: [ "*://tv.yandex.ru/*" ]},['requestHeaders']);
+
+var urlfind = "<all_urls>";
+chrome.webRequest.onSendHeaders.addListener(function(details){
+	chrome.tabs.query({
+    active: true,
+    currentWindow: true
+    },function(tabs){	
+		var vvvv =  details.url;
+		var currenttab = tabs[0].url;
+		if(vvvv == currenttab){  // если запрос от текущей страницы активной вкладки
+	       setTimeout(function(){
+            chrome.tabs.executeScript(null, {file: "deletetimer.js"});
+           },5000); // таймер
+		}
+	});
+	
+}, {urls: [ urlfind ]},['requestHeaders']);
 
 
 //  Загрузка по очереди [m][z]
