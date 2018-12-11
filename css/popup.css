@@ -1,0 +1,77 @@
+
+ body {
+    margin: 10px;
+    /* white-space: nowrap; */
+  }
+
+  h1 {
+    font-size: 15px;
+  }
+
+  #container {
+    max-width: 150px;
+    min-width: 150px;
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+#maskList{
+    width: 100%;
+}
+#testMasklist{
+    word-wrap: break-word;
+}
+/*  Tabs */
+.tabs {
+    width: 300px;
+    /* max-width: 500px; */
+ }
+ 
+ /* Стили для списка вкладок */
+ .tab-header {
+    list-style: none;
+    padding-left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 0;
+ }
+ 
+ /* Стили для вкладки */
+ .tab-header__item {
+    padding: 10px 20px;
+    margin-right: 5px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-bottom: none;
+ }
+ 
+ /* Стили для активной вкладки */
+ .tab-header__item.active {
+    color: blue;
+    position: relative;
+    top: 1px;
+    background-color: #fff;
+    border-color: blue;
+   
+ }
+ 
+ /* Стиль для списка контейнеров с содержимым вкладок */
+ .tab-content {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+ }
+ 
+ /* Стили для контейнера с содержимым вкладки */
+ .tab-content__item {
+    display: none;
+    padding: 20px;
+    border: 1px solid blue;
+ }
+ 
+ /* Стили для активного контейнера вкладки */
+ .tab-content__item.active {
+    display: block;
+ }
+ 

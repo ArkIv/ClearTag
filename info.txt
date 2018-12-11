@@ -1,0 +1,11 @@
+let textInfo = `
+          <b>примеры масок URL-адресов для поиска:</b><br>
+          http://*/*<br>
+          http://*/foo*<br>
+          https://*.google.com/foo*bar<br>
+          http://example.org/foo/bar.html<br>
+          file:///foo*<br>
+          http://127.0.0.1/*<br>
+          *://mail.google.com/*<br>
+          &lt;all_urls&gt;  все адреса <br>
+`;

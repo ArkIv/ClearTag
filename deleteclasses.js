@@ -19,10 +19,19 @@ function removeTags(){
   if(u[0])u[0].remove();
     u = document.getElementsByClassName("grid-chunk__column-box");
   if(u[0])u[0].remove();
-    u = document.getElementsByClassName("grid-chunk__adv-wide");
+  u = document.getElementsByClassName("grid-chunk__adv-wide");
   while(u[0]){
 		 u[0].parentNode.removeChild(u[0]);
-	   }
+     }
+  u = document.getElementsByClassName("content__adv-aside");
+  while(u[0]){
+		 u[0].parentNode.removeChild(u[0]);
+     }
+  u = document.getElementsByClassName("content__adv-footer");
+  while(u[0]){
+     u[0].parentNode.removeChild(u[0]);
+     }
+     
   
   console.log("очистка яндекс tv");
 

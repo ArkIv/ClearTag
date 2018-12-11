@@ -104,39 +104,46 @@ function saveBackgroundColor(url, color) {
 // chrome.storage.local allows the extension data to be synced across multiple
 // user devices.
 document.addEventListener('DOMContentLoaded', () => {
+  startTab();
+
 //	var div = document.createElement("DIV");
 //  div.innerHTML = "898989898989898989898";
 //  document.getElementsByTagName('body')[0].appendChild(div);
 
-	
-  getCurrentTabUrl((url) => {
-    var dropdown = document.getElementById('dropdown');
-   	var t = document.getElementById('TT');
-	t.innerHTML=url; 
+  //  что тута????
+  
+  // getCurrentTabUrl((url) => {
+  //   var dropdown = document.getElementById('dropdown');
+  //  	var t = document.getElementById('TT');
+	// t.innerHTML=url; 
 	
 
 	
-    // Load the saved background color for this page and modify the dropdown
-    // value, if needed.
-    getSavedBackgroundColor(url, (savedColor) => {
-      if (savedColor) {
-        changeBackgroundColor(savedColor);
-        dropdown.value = savedColor;
-	  }
-    });
+  //   // Load the saved background color for this page and modify the dropdown
+  //   // value, if needed.
+  //   getSavedBackgroundColor(url, (savedColor) => {
+  //     if (savedColor) {
+  //       changeBackgroundColor(savedColor);
+  //       dropdown.value = savedColor;
+	//   }
+  //   });
 
-    // Ensure the background color is changed and saved when the dropdown
-    // selection changes.
-    dropdown.addEventListener('change', () => {
-      changeBackgroundColor(dropdown.value);
-      saveBackgroundColor(url, dropdown.value);
-    });
-	var buttonscr = document.getElementById('buttonscr');
-	buttonscr.addEventListener('click', () => {
-		clickButton();
-	});
+  //   // Ensure the background color is changed and saved when the dropdown
+  //   // selection changes.
+  //   dropdown.addEventListener('change', () => {
+  //     changeBackgroundColor(dropdown.value);
+  //     saveBackgroundColor(url, dropdown.value);
+  //   });
+	// var buttonscr = document.getElementById('buttonscr');
+	// buttonscr.addEventListener('click', () => {
+	// 	clickButton();
+	// });
 	
-  });
+  // });
+  var inf = document.getElementsByClassName("textInfo");
+  inf[0].innerHTML = textInfo;
+//console.log("inner",inf.innerHTML);
+
 });
 function clickButton() {
 //	var ddd = document.getElementById('background');
@@ -163,3 +170,96 @@ function clickButton() {
     code: script
   });
 }
+
+// var maskList = document.getElementById("maskList");
+// maskList.addEventListener("keypress", onkeypress);
+// //maskList.addEventListener("keydown", onkeydown);
+
+// function onkeypress(e){
+// var myList = maskList.value.split('\n');
+// var testMasklist = document.getElementById("testMasklist");
+// testMasklist.textContent = myList.join(','); 
+// console.log("key press");
+// }
+
+// tabs
+    // чтение записанных данных
+    function getSavedUrlListEvent(key, callback) {
+      chrome.storage.sync.get(key, (items) => {
+        callback(chrome.runtime.lastError ? null : items[key]);
+      });
+    }
+function startTab(){
+  
+  // вызов функции чтения записанных данных  (savedList - callback функция)
+  getSavedUrlListEvent("UrlListEvents", (savedList) => {
+    if (savedList) {
+      var arr = savedList.split(',');
+      var index, len;
+     for (index = 0, len = arr.length; index < len; ++index) {
+      maskList.value += arr[index].trim()+"\n";//.slice(1, -1)+"\n";
+     }
+     onkeyup(null);
+  }
+});
+ var maskList = document.getElementById("maskList");
+  maskList.onkeyup = onkeyup ;
+  maskList.oninput  = onkeyup ; // ловим изменения в textArea
+  
+// это к Табам
+var jsTriggers = document.querySelectorAll('.js-tab-trigger');
+
+jsTriggers.forEach(function(trigger) {
+   trigger.addEventListener('click', function() {
+      var id = this.getAttribute('data-tab'),
+          content = document.querySelector('.js-tab-content[data-tab="'+id+'"]'),
+          activeTrigger = document.querySelector('.js-tab-trigger.active'),
+          activeContent = document.querySelector('.js-tab-content.active');
+      
+      activeTrigger.classList.remove('active');
+      trigger.classList.add('active');
+      
+      activeContent.classList.remove('active');
+      content.classList.add('active');
+   });
+});
+
+
+ var buttonDelListener = document.getElementById('buttonDelListener');
+ buttonDelListener.addEventListener('click', () => {
+  	clickDelListener();
+ });
+}
+function clickDelListener(){
+  var bgPage = chrome.extension.getBackgroundPage();
+  bgPage.delListener();
+  window.close();
+}
+// end tabs
+function onkeyup (e){
+ // maskList.value = maskList.value.trim()+"\n";
+var myList = maskList.value.split('\n');
+var testMasklist = document.getElementById("testMasklist");
+// собираем строку из textArea
+testMasklist.textContent="";
+var index, len;
+for (index = 0, len = myList.length; index < len; ++index) {
+    if(myList[index].trim() != "")
+      if(testMasklist.textContent.length > 0)
+      testMasklist.textContent += ','+myList[index].trim();   
+      else
+      testMasklist.textContent += myList[index].trim(); 
+      // testMasklist.textContent += ",'"+myList[index].trim()+"'";   
+      // else
+      // testMasklist.textContent += "'"+myList[index].trim()+"'";
+            
+}
+// Записываем данные из textArea
+var SaveUrlListEvents = {};
+SaveUrlListEvents["UrlListEvents"] = testMasklist.textContent;
+if(SaveUrlListEvents["UrlListEvents"]=="")SaveUrlListEvents["UrlListEvents"]="http://test.com/test.html" 
+chrome.storage.sync.set(SaveUrlListEvents);
+//testMasklist.textContent = myList.join(','); 
+console.log("key press");
+}
+

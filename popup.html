@@ -6,24 +6,11 @@
  -->
 <html>
   <head>
+      <link rel="stylesheet" href="css/popup.css" type="text/css"/>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
     <title>Getting Started Extension's Popup</title>
-    <style type="text/css">
-      body {
-        margin: 10px;
-        white-space: nowrap;
-      }
 
-      h1 {
-        font-size: 15px;
-      }
-
-      #container {
-	    width: 100px;
-		align-items: center;
-        display: flex;
-        justify-content: space-between;
-      }
-    </style>
 
     <!--
       - JavaScript and HTML must be in separate files: see our Content Security
@@ -32,22 +19,40 @@
       - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
     -->
     <script src="popup.js"></script>
+    <script src="info.txt"></script>
   </head>
 
   <body>
-    <h1>Кнопка удалит рекламму в яндекс-тв.</h1>
-	<button id="buttonscr">Очистить</button>
-	<br>
-    <div id="container">
-      <span>Цвет фона </span>
-      <select id="dropdown">
-        <option selected disabled hidden value=''></option>
-        <option value="white">White</option>
-        <option value="pink">Pink</option>
-        <option value="green">Green</option>
-        <option value="yellow">Yellow</option>
-      </select>
-    </div>
-	<div id="TT">+++++++1</div>
+<!-- Общий контейнер для табов -->
+<div class="tabs">
+   
+    <!--  Контейнер с вкладками   -->
+    <ul class="tab-header">
+       <li class="tab-header__item js-tab-trigger active" data-tab="1">яндекс-тв</li>
+       <li class="tab-header__item js-tab-trigger" data-tab="2">Настройка</li>
+       <li class="tab-header__item js-tab-trigger" data-tab="3">Справка</li>
+    </ul>
+    
+    <!--  Контейнер с блоками, которые содержат контент вкладок   -->
+    <ul class="tab-content">
+       <li class="tab-content__item js-tab-content active" data-tab="1">
+          <h1>Кнопка удалит рекламму в яндекс-тв.</h1>
+          <button id="buttonscr">Очистить</button>
+          <br>
+       </li>
+       <li class="tab-content__item js-tab-content" data-tab="2">
+          <b>Введите маски адресов для отслеживания:</b><br>
+          <textarea rows="7"  id="maskList" name="message"></textarea>
+          <button id="buttonDelListener">Старт</button>
+          <div id="testMasklist">89</div>
+       </li>
+       <li class="tab-content__item js-tab-content" data-tab="3">
+         <div class="textInfo">
+
+        </div>
+       </li>
+    </ul>
+ </div>
+ <!-- Конец таб контейнера-->
   </body>
 </html>
