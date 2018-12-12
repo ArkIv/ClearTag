@@ -9,7 +9,7 @@
       <link rel="stylesheet" href="css/popup.css" type="text/css"/>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>Getting Started Extension's Popup</title>
+    <title>Удаление выбраннвх классов с открываемых страниц</title>
 
 
     <!--
@@ -28,7 +28,7 @@
    
     <!--  Контейнер с вкладками   -->
     <ul class="tab-header">
-       <li class="tab-header__item js-tab-trigger active" data-tab="1">яндекс-тв</li>
+       <li class="tab-header__item js-tab-trigger active" data-tab="1">tv.yandex.ru</li>
        <li class="tab-header__item js-tab-trigger" data-tab="2">Настройка</li>
        <li class="tab-header__item js-tab-trigger" data-tab="3">Справка</li>
     </ul>
@@ -41,10 +41,38 @@
           <br>
        </li>
        <li class="tab-content__item js-tab-content" data-tab="2">
-          <b>Введите маски адресов для отслеживания:</b><br>
+         <!-- второй -->
+         <!-- Общий контейнер для табов -->
+<div class="tabs2">
+    <!--  Контейнер с вкладками   -->
+<ul class="tab-header2">
+   <li class="tab-header__item2 js-tab-trigger2 active" data-tab="1">URL-mask</li>
+   <li class="tab-header__item2 js-tab-trigger2" data-tab="2">Classes</li>
+   <li class="tab-header__item2 js-tab-trigger2" data-tab="3">ID</li>
+</ul>
+<ul class="tab-content2">
+   <li class="tab-content__item2 js-tab-content2 active" data-tab="1">
+       <b>Введите маски адресов для отслеживания:</b><br>
+       <textarea rows="7"  id="maskList" name="message"></textarea>
+       
+       <div id="testMasklist">89</div>
+   </li>
+   <li class="tab-content__item2 js-tab-content2" data-tab="2">
+      <b>Введите классы для отслеживания:</b><br>
+      <textarea rows="7"  id="classList" name="classes"></textarea> 
+   </li>
+   <li class="tab-content__item2 js-tab-content2" data-tab="3">
+      <b>Введите ID элементов для отслеживания:</b><br>
+      <textarea rows="7"  id="idList" name="IDs"></textarea>
+   </li> 
+</ul>
+<button id="buttonDelListener">Сохранить / Старт</button>
+</div>
+    <!-- конец второй-->
+          <!-- <b>Введите маски адресов для отслеживания:</b><br>
           <textarea rows="7"  id="maskList" name="message"></textarea>
           <button id="buttonDelListener">Старт</button>
-          <div id="testMasklist">89</div>
+          <div id="testMasklist">89</div> -->
        </li>
        <li class="tab-content__item js-tab-content" data-tab="3">
          <div class="textInfo">
@@ -52,6 +80,7 @@
         </div>
        </li>
     </ul>
+
  </div>
  <!-- Конец таб контейнера-->
   </body>

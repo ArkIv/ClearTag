@@ -171,28 +171,39 @@ function clickButton() {
   });
 }
 
-// var maskList = document.getElementById("maskList");
-// maskList.addEventListener("keypress", onkeypress);
-// //maskList.addEventListener("keydown", onkeydown);
-
-// function onkeypress(e){
-// var myList = maskList.value.split('\n');
-// var testMasklist = document.getElementById("testMasklist");
-// testMasklist.textContent = myList.join(','); 
-// console.log("key press");
-// }
-
 // tabs
-    // чтение записанных данных
-    function getSavedUrlListEvent(key, callback) {
+    // чтение записанных данных Адреса
+function getSavedUrlListEvent(key, callback) {
       chrome.storage.sync.get(key, (items) => {
         callback(chrome.runtime.lastError ? null : items[key]);
       });
-    }
+}
+    // чтение записанных данных  Класы
+function getSavedClassesList(key, callback) {
+      chrome.storage.sync.get(key, (items) => {
+        callback(chrome.runtime.lastError ? null : items[key]);
+      });
+}
+  // чтение записанных данных  Id
+  function getSavedIdList(key, callback) {
+    chrome.storage.sync.get(key, (items) => {
+      callback(chrome.runtime.lastError ? null : items[key]);
+    });
+}
+/**  startTab это срабатывает после загрузки страницы popup
+ * 
+ */
 function startTab(){
+  var maskList = document.getElementById("maskList");
+  maskList.onkeyup = onkeyup ;
+  maskList.oninput  = onkeyup ; // ловим изменения в textArea
+  var classList = document.getElementById("classList");
+  classList.onkeyup = onkeyupClass ;
+  classList.oninput  = onkeyupClass ; // ловим изменения в textArea
+  var idList = document.getElementById("idList");
   
-  // вызов функции чтения записанных данных  (savedList - callback функция)
-  getSavedUrlListEvent("UrlListEvents", (savedList) => {
+// вызов функции чтения записанных данных  (savedList - callback функция)
+getSavedUrlListEvent("UrlListEvents", (savedList) => {
     if (savedList) {
       var arr = savedList.split(',');
       var index, len;
@@ -202,13 +213,31 @@ function startTab(){
      onkeyup(null);
   }
 });
- var maskList = document.getElementById("maskList");
-  maskList.onkeyup = onkeyup ;
-  maskList.oninput  = onkeyup ; // ловим изменения в textArea
-  
-// это к Табам
-var jsTriggers = document.querySelectorAll('.js-tab-trigger');
+getSavedClassesList("ClassesList", (savedList) => {
+  if (savedList) {
+    var arr = savedList.split(',');
+    var index, len;
+   for (index = 0, len = arr.length; index < len; ++index) {
+    classList.value += arr[index].trim()+"\n";//.slice(1, -1)+"\n";
+   }
+   onkeyup(null);
+}
+});
+getSavedIdList("idList", (savedList) => {
+  if (savedList) {
+    var arr = savedList.split(',');
+    var index, len;
+   for (index = 0, len = arr.length; index < len; ++index) {
+    idList.value += arr[index].trim()+"\n";//.slice(1, -1)+"\n";
+   }
+   onkeyup(null);
+}
+});
 
+
+  
+// это к Tab - основной
+var jsTriggers = document.querySelectorAll('.js-tab-trigger');
 jsTriggers.forEach(function(trigger) {
    trigger.addEventListener('click', function() {
       var id = this.getAttribute('data-tab'),
@@ -223,43 +252,151 @@ jsTriggers.forEach(function(trigger) {
       content.classList.add('active');
    });
 });
+// Tab - основной конец
+var jsTriggers2 = document.querySelectorAll('.js-tab-trigger2');
+jsTriggers2.forEach(function(trigger) {
+   trigger.addEventListener('click', function() {
+      var id = this.getAttribute('data-tab'),
+          content = document.querySelector('.js-tab-content2[data-tab="'+id+'"]'),
+          activeTrigger = document.querySelector('.js-tab-trigger2.active'),
+          activeContent = document.querySelector('.js-tab-content2.active');
+      
+      activeTrigger.classList.remove('active');
+      trigger.classList.add('active');
+      
+      activeContent.classList.remove('active');
+      content.classList.add('active');
+   });
+});
+// Tab - основной конец
 
 
- var buttonDelListener = document.getElementById('buttonDelListener');
- buttonDelListener.addEventListener('click', () => {
-  	clickDelListener();
- });
-}
-function clickDelListener(){
-  var bgPage = chrome.extension.getBackgroundPage();
-  bgPage.delListener();
-  window.close();
-}
+
 // end tabs
 function onkeyup (e){
- // maskList.value = maskList.value.trim()+"\n";
-var myList = maskList.value.split('\n');
-var testMasklist = document.getElementById("testMasklist");
+
+}
+
+var buttonDelListener = document.getElementById('buttonDelListener');
+buttonDelListener.addEventListener('click', () => {
+   clickSaveRestart();
+});
+}
+
+// преобразуем список в строку с запятыми
+function getListString(List){
+  var myList = List.value.split('\n');
+
 // собираем строку из textArea
-testMasklist.textContent="";
+var ListBuf="";
 var index, len;
 for (index = 0, len = myList.length; index < len; ++index) {
     if(myList[index].trim() != "")
-      if(testMasklist.textContent.length > 0)
-      testMasklist.textContent += ','+myList[index].trim();   
+      if(ListBuf.length > 0)
+      ListBuf += ','+myList[index].trim();   
       else
-      testMasklist.textContent += myList[index].trim(); 
-      // testMasklist.textContent += ",'"+myList[index].trim()+"'";   
-      // else
-      // testMasklist.textContent += "'"+myList[index].trim()+"'";
-            
+      ListBuf += myList[index].trim(); 
 }
-// Записываем данные из textArea
-var SaveUrlListEvents = {};
-SaveUrlListEvents["UrlListEvents"] = testMasklist.textContent;
-if(SaveUrlListEvents["UrlListEvents"]=="")SaveUrlListEvents["UrlListEvents"]="http://test.com/test.html" 
-chrome.storage.sync.set(SaveUrlListEvents);
-//testMasklist.textContent = myList.join(','); 
-console.log("key press");
+testMasklist.textContent = ListBuf;
+return ListBuf;
 }
 
+// Запись данных и перезагрузка слушателя
+function clickSaveRestart(){
+// Записываем данные из textArea
+var maskSaveList = {};
+var maskList = document.getElementById("maskList");
+maskSaveList["maskList"] = getListString(maskList);
+if(maskSaveList["maskList"]=="")
+maskSaveList["maskList"]="http://test.com/test.html"
+
+chrome.storage.sync.set(maskSaveList,function(){
+  if(chrome.runtime.lastError){
+    Log("error: ","error", chrome.runtime.lastError);
+  }else{
+    Log("Сохранили адреса...","success");
+    saveClassList();
+    
+  }
+});
+}
+
+function saveClassList(){
+  // Записываем данные из textArea
+var maskSaveList = {};
+var maskList = document.getElementById("classList");
+maskSaveList["classList"] = getListString(maskList);
+if(maskSaveList["classList"]=="")
+    maskSaveList["classList"]="globalClass_ET";
+chrome.storage.sync.set(maskSaveList,function(){
+  if(chrome.runtime.lastError){
+    Log("Ошибка записи списка классов","error", chrome.runtime.lastError);
+  }else{
+    Log("Сохранили classList...","success");
+    saveIdList();
+  }
+});
+}
+function saveIdList(){
+  // Записываем данные из textArea
+var maskSaveList = {};
+var maskList = document.getElementById("idList");
+maskSaveList["idList"] = getListString(maskList);
+if(maskSaveList["idList"]=="")
+    maskSaveList["idList"]="";
+chrome.storage.sync.set(maskSaveList,function(){
+  if(chrome.runtime.lastError){
+    Log("Ошибка записи списка ID","error", chrome.runtime.lastError);
+  }else{
+    Log("Сохранили idList...","success");
+   closePopup();
+  }
+});
+}
+
+
+
+
+
+ // заставим перечитать данные для слушателя 
+function closePopup(){
+ var bgPage = chrome.extension.getBackgroundPage();
+ bgPage.delListener();
+ window.close();
+}
+
+
+function onkeyupClass (e){
+  var myList = classList.value.split('\n');
+  var testMasklist = document.getElementById("testMasklist");
+  // собираем строку из textArea
+  testMasklist.textContent="";
+  var index, len;
+  for (index = 0, len = myList.length; index < len; ++index) {
+      if(myList[index].trim() != "")
+        if(testMasklist.textContent.length > 0)
+        testMasklist.textContent += ','+myList[index].trim();   
+        else
+        testMasklist.textContent += myList[index].trim(); 
+  }
+  
+  // Записываем данные из textArea
+  var SaveUrlListEvents = {};
+  SaveUrlListEvents["ClassesList"] = testMasklist.textContent;
+  if(SaveUrlListEvents["ClassesList"]=="")SaveUrlListEvents["ClassesList"]="globalClass_ET" 
+  chrome.storage.sync.set(SaveUrlListEvents,catchLastError);
+  }
+
+  function Log(message,color,obj){
+    var bgPage = chrome.extension.getBackgroundPage();
+    bgPage.Log("[popup] "+message,color,obj);
+    console.log(message);
+  }
+  function catchLastError(){
+    if(chrome.runtime.lastError){
+      Log("error: ","error", chrome.runtime.lastError);
+    }else{
+      Log("Скрипт загружен...","success");
+  
+    }
+  }
