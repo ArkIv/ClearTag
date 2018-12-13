@@ -10,7 +10,7 @@ function startT(){
 var countTik=0;
 var sint = setInterval(function(){
   if(countTik == 0)
-    Log("find classes for clear  start...","info" );
+    Log("Поиск классов для очистки, старт...","info" );
     var arr = ClearClassBuffer;
     var i, len;
    for (i = 0, len = arr.length; i < len; ++i) {
@@ -34,7 +34,7 @@ var sint = setInterval(function(){
         
    if(countTik++ >= 6 ){
      clearInterval(sint);
-     Log("find classes for clear  stop... ("+countTik+")","info" );
+     Log("Поиск классов окончен... ("+countTik+")","info" );
    }
    
 },1000);
