@@ -145,21 +145,6 @@ function Log(message, color, obj) {
   // chrome-devtools:  chrome-extension:
   if (logEnabled == false) return;
 
-
-  // chrome.tabs.query({  // запрос всех вкладок  // chrome:/ chrome-extension:
-  //   active: true,      // фильтруем нужные
-  //   currentWindow: true
-  // }, function (tabs) {    	// получаем отфильтрованные
-  //   if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
-  //     var currenttab = tabs[0].url; // текущая активная-открытая вкладка
-  //     if (currenttab.indexOf("chrome:") !== -1) return;
-  //     if (currenttab.indexOf("chrome-extension:") !== -1) return;
-  //   }
-  // }
-  // ,() => { if (chrome.runtime.lastError) {return;} }
-  // );
-
-
   color = color || "black";
 
   switch (color) {
@@ -173,6 +158,9 @@ function Log(message, color, obj) {
       color = "DodgerBlue";
       break;
     case "error":
+      color = "Red";
+      break;
+    case "ошибка":
       color = "Red";
       break;
     case "warning":
