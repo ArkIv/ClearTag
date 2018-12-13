@@ -159,7 +159,7 @@ function Log(message, color, obj) {
     case "error":
       color = "Red";
       break;
-    case "err":
+    case "fatal":
       color = "Red";
       break;
     case "warning":
