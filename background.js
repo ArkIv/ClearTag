@@ -146,7 +146,6 @@ function Log(message, color, obj) {
   if (logEnabled == false) return;
 
   color = color || "black";
-
   switch (color) {
     case "success":
       color = "Green";
@@ -160,7 +159,7 @@ function Log(message, color, obj) {
     case "error":
       color = "Red";
       break;
-    case "ошибка":
+    case "err":
       color = "Red";
       break;
     case "warning":
