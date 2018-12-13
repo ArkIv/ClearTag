@@ -150,6 +150,7 @@ function Log(message, color, obj) {
     case "success":
       color = "Green";
       break;
+      
     case "ok":
       color = "Green";
       break;
