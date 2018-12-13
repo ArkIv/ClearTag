@@ -203,7 +203,7 @@ function startTab(){
   var idList = document.getElementById("idList");
   
 // вызов функции чтения записанных данных  (savedList - callback функция)
-getSavedUrlListEvent("UrlListEvents", (savedList) => {
+getSavedUrlListEvent("maskList", (savedList) => {  // UrlListEvents интересно осталось или нет
     if (savedList) {
       var arr = savedList.split(',');
       var index, len;

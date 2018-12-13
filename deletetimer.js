@@ -1,38 +1,67 @@
 function startT(){
- // alert(div.innerHTML);
+ // var arrClasses = ClearClassBuffer;
+  // эти переменные уже объявлены ранее в предзагрузке скрипта
+  ClearClassBuffer = ClearClassBuffer.split(",");
+  ClearIdBuffer = ClearIdBuffer.split(",");
+   Log("Получили список классов: ","info",ClearClassBuffer);
+   Log("Получили список ID: ","info",ClearIdBuffer);
+ //  var arrIdClass = divIdList.innerHTML.split(",");
+ //  Log("Читаем с Div список классов: ","info",arrIdClass);
 var countTik=0;
 var sint = setInterval(function(){
-	Log("check clear class  tik..."+countTik++,"info" );
-  var a = document.getElementsByClassName("globalClass_ET");
-if(a[0]){
-    while(a[0]){
-    a[0].parentNode.removeChild(a[0]);
-    Log("очистка globalClass_ET yes","success"); 
-    }
-  }
-a = document.getElementsByClassName("sendpulse-prompt");
-if(a[0]){
-    while(a[0]){
-    a[0].parentNode.removeChild(a[0]);
-    Log("очистка sendpulse-prompt yes","success"); 
-    }
-  }
-a = document.getElementsByClassName("adtester-container");
-if(a[0]){
-    while(a[0]){
-    a[0].parentNode.removeChild(a[0]);
-    Log("очистка adtester-container yes","success"); 
-    }
-  }
+  if(countTik == 0)
+    Log("find classes for clear  start...","info" );
+    var arr = ClearClassBuffer;
+    var i, len;
+   for (i = 0, len = arr.length; i < len; ++i) {
+    var a = document.getElementsByClassName(arr[i]);
+    if(a[0]){
+        while(a[0]){
+        a[0].parentNode.removeChild(a[0]);
+        Log("очистка "+arr[i]+" yes","success"); 
+        }
+      }
+   }    
+   var arr = ClearIdBuffer;
+   var i, len;
+  for (i = 0, len = arr.length; i < len; ++i) {
+   var a = document.getElementById(arr[i]);
+   if(a){
+       a.parentNode.removeChild(a);
+       Log("очистка Id:"+arr[i]+" yes","success"); 
+       }
+  }     
         
-   if(countTik >= 6 ){
-	   clearInterval(sint);
+   if(countTik++ >= 6 ){
+     clearInterval(sint);
+     Log("find classes for clear  stop... ("+countTik+")","info" );
    }
    
 },1000);
 }
 startT();
-
+mutationEnable();
+// ============== Mutation ===============  ловим изменения DOM ===============
+function mutationEnable(){
+  // выбираем целевой элемент
+//  var target = document.getElementById('some-id');
+  var target = document; // весь документ
+  // создаём экземпляр MutationObserver
+var observer = new MutationObserver(function(mutations) {
+  mutations.forEach(function(mutation) {
+   // Log("mutation: ","warning",mutation);
+  });    
+});
+ // конфигурация нашего observer:
+// childList - добавление изменение элементов
+// var config = { subtree: true,  attributes: true, characterData: true, childList: true };
+// Обязательно установить одно из этих (childList, attributes, characterData)иначе ошибка
+var config = { subtree: true, childList: true };
+// передаём в качестве аргументов целевой элемент и его конфигурацию
+observer.observe(target, config);
+ // позже можно остановить наблюдение
+//observer.disconnect();
+}
 
 //   Это для логов  ============================================================
 function Log(message, color,obj) {
