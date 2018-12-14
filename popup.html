@@ -18,7 +18,7 @@
       -
       - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
     -->
-    <script src="popup.js"></script>
+    <script src="popup.js" defer></script>
     <script src="info.txt"></script>
   </head>
 
@@ -29,8 +29,9 @@
     <!--  Контейнер с вкладками   -->
     <ul class="tab-header">
        <li class="tab-header__item js-tab-trigger active" data-tab="1">tv.yandex.ru</li>
-       <li class="tab-header__item js-tab-trigger" data-tab="2">Настройка</li>
+       <li class="tab-header__item js-tab-trigger " data-tab="2">Настройка</li>
        <li class="tab-header__item js-tab-trigger" data-tab="3">Справка</li>
+       <li class="tab-header__item js-tab-trigger" data-tab="4">Тест</li>
     </ul>
     
     <!--  Контейнер с блоками, которые содержат контент вкладок   -->
@@ -47,30 +48,33 @@
     <!--  Контейнер с вкладками   -->
 <ul class="tab-header2">
    <li class="tab-header__item2 js-tab-trigger2 active" data-tab="1">URL-mask</li>
-   <li class="tab-header__item2 js-tab-trigger2" data-tab="2">Classes</li>
+   <li class="tab-header__item2 js-tab-trigger2 " data-tab="2">Classes</li>
    <li class="tab-header__item2 js-tab-trigger2" data-tab="3">ID</li>
    <!-- <li class="tab-header__item3 js-tab-trigger2" data-tab="4">ID</li> -->
 </ul>
 <ul class="tab-content2">
    <li class="tab-content__item2 js-tab-content2 active" data-tab="1">
        <b>Введите маски адресов для отслеживания:</b><br>
-       <textarea rows="7"  id="maskList" name="message"></textarea>
+
+       <textarea wrap="off"  rows="15"  id="maskList" name="message"></textarea>
        
        <!-- <div id="testMasklist">89</div> -->
    </li>
    <li class="tab-content__item2 js-tab-content2" data-tab="2">
       <b>Введите классы для отслеживания:</b><br>
-      <textarea rows="7"  id="classList" name="classes"></textarea> 
+      <textarea wrap="off" rows="15"  id="classList" name="classes"></textarea> 
    </li>
    <li class="tab-content__item2 js-tab-content2" data-tab="3">
       <b>Введите ID элементов для отслеживания:</b><br>
-      <textarea rows="7"  id="idList" name="IDs"></textarea>
+      <textarea wrap="off" rows="15"  id="idList" name="IDs"></textarea>
    </li> 
    <!-- <li class="tab-content__item2 js-tab-content2" data-tab="4">
       <b>Установки:</b><br>
    </li>  -->
 </ul>
+<div class="divForButton">
 <button id="buttonDelListener" class="abutton">Сохранить / Старт</button>
+</div>
 </div>
     <!-- конец второй-->
           <!-- <b>Введите маски адресов для отслеживания:</b><br>
@@ -82,6 +86,34 @@
          <div class="textInfo">
 
         </div>
+       </li>
+       <li class="tab-content__item js-tab-content" data-tab="4">
+<!--  Контейнер с вкладками   -->
+      <div class="tabs3">
+        <ul class="tab-header3">
+            <li class="tab-header__item3 js-tab-trigger3 active" data-tab="1">URL-mask</li>
+            <li class="tab-header__item3 js-tab-trigger3 " data-tab="2">Classes</li>
+            <li class="tab-header__item3 js-tab-trigger3" data-tab="3">ID</li>
+            <!-- <li class="tab-header__item3 js-tab-trigger2" data-tab="4">ID</li> -->
+         </ul>
+         <ul class="tab-content3">
+            <li class="tab-content__item3 js-tab-content3 active" data-tab="1">
+                  <select multiple class="selectAddr">
+                        <option>Блины</option>
+                        <option>Запеканка</option>
+                        <option>МороженкаМо роженкаМороженкаМороженк аМороженкаМороженкаМо роженкаМороженка </option<option>Блины</option>
+                        <option>Запеканка</option>
+                        <option>Мороженка </option<option>Блины</option>
+                        <option>Запеканка</option>
+                        <option>Мороженка </option<option>Блины</option>
+                        <option>Запеканка</option>
+                        <option>Мороженка </option>
+                      </select>
+                      <div class="insertOption" ><input type="text" class="textOption" autofocus></input><button class="buttonInsert">Добавить</button></div>
+            </li>
+            <li class="tab-content__item3 js-tab-content3 " data-tab="2"></li>
+            <li class="tab-content__item3 js-tab-content3 " data-tab="3"></li>
+         </ul>
        </li>
     </ul>
 

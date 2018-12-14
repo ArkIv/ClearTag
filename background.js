@@ -2,7 +2,7 @@ logEnabled = true;
 // это только для яндекса
 chrome.webRequest.onCompleted.addListener(function (details) {
   console.log(details);
-  chrome.tabs.executeScript(details.tabId, { file: "deleteclasses.js" },
+  chrome.tabs.executeScript(details.tabId, { file: "deleteclasses.js",allFrames: true },
     () => {
       if (chrome.runtime.lastError) {
         Log("error: не загрузился скрипт \"deleteclasses\"", "error", chrome.runtime.lastError);
@@ -27,7 +27,8 @@ function startBackground() {
     var urlList = "";
     if (savedList) {
       var arr = savedList.split(',');
-      Log("прочитали данные:", "info", savedList);
+      //var arrC = []; arrC["Adresses"] = arr? arr:"нет адресов";// listErr? listErr.slice(0, -1).split(","):"не обнаружено";
+      Log("Загрузили адреса прослушки:", "info", arr);//savedList);
       var urlfind = "<all_urls>";
       if (savedList) urlfind = arr;
       if (savedList == "urlfind") urlfind = "<all_urls>";
@@ -35,6 +36,8 @@ function startBackground() {
       // Запуск прослушивателя после загрузки масок адресов
       chrome.webRequest.onCompleted.addListener(urlListener, { urls: urlfind }, ['responseHeaders']);
       // адреса подставлены и при совпадении будет вызываться  urlListener
+      // запуск в текущей вкладке
+      urlListener();
     }
   });
 } // end startBackground
@@ -63,7 +66,7 @@ function urlListener(details) {
   }, function (tabs) {    	// получаем отфильтрованные
     if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
       var currenttab = tabs[0].url; // текущая активная-открытая вкладка
-      if (details.url == currenttab) {  // если запрос от текущей страницы активной вкладки, details.url - адрес текущей загрузки
+      if (!details || details.url == currenttab) {  // если запрос от текущей страницы активной вкладки, details.url - адрес текущей загрузки
         loadListClasses("classList", (savedList) => {   // читаем из хранилища
           // получили список из хранилища
           //  var classBufer = 'var divClassList = document.createElement("div");divClassList.id="ClearClassesId";divClassList.innerHTML="' + savedList + '";';
@@ -73,7 +76,7 @@ function urlListener(details) {
             //  var idBuffer ='var divIdList = document.createElement("div");divIdList.id="ClearClassesIdList";divIdList.innerHTML="' + savedList + '";';
             var idBuffer = 'var ClearIdBuffer = "' + savedList + '";';
             // получили список из хранилища
-            uploadElement(details, classBuffer + idBuffer);
+            uploadElement(tabs[0], classBuffer + idBuffer);
           });
           // if (savedList) {
           //   uploadElement(details, savedList);   
@@ -91,19 +94,19 @@ function urlListener(details) {
 
 
 // Создаем и загружаем элемент с данными
-function uploadElement(details, savedList) {
+function uploadElement(Tab, savedList) {
   setTimeout(function () {
-    chrome.tabs.executeScript(details.tabId, {
+    chrome.tabs.executeScript(Tab.id, {
       //  code: 'var divClasses = document.createElement("div");divClasses.id="ClearClassesId";divClasses.innerHTML="' + savedList + '";'
-      code: savedList
+      code: savedList, allFrames: true
     },
       () => {
         if (chrome.runtime.lastError) {
-          Log("error: не создать элемент", "error", chrome.runtime.lastError);
+          Log("не загрузить списки", "error", chrome.runtime.lastError);
         } else {
-          Log("элемент создан загружен-3", "success");
-          Log("url (на что среагировал):" + details.url, "success");
-          uploadScript(details);
+          Log("Списки загружены-3", "success","инициатор: "+Tab.url);
+         // Log("url (на что среагировал):" + details.url, "success");
+          uploadScript(Tab);
         }
       }
 
@@ -114,8 +117,8 @@ function uploadElement(details, savedList) {
 
 
 // старт загрузки файла скрипта после установки переменных т.е. создания дива
-function uploadScript(details) {
-  chrome.tabs.executeScript(details.tabId, { file: "deletetimer.js" },
+function uploadScript(Tab) {
+  chrome.tabs.executeScript(Tab.id, { file: "deletetimer.js" , allFrames: true},
     () => {
       if (chrome.runtime.lastError) {
         Log("error: не загрузился скрипт \"deletetimer\"", "error", chrome.runtime.lastError);
@@ -140,6 +143,43 @@ function delListener() {
   chrome.webRequest.onCompleted.removeListener(urlListener);
   startBackground();
 }
+
+// Должен ловить закрытие popup.html
+// в popup.js  строка  var port = chrome.runtime.connect()
+chrome.runtime.onConnect.addListener(function (externalPort) {
+  externalPort.onDisconnect.addListener(function () {
+    console.log("Отключились от Popup.js  окно закрылось.")
+    // Do stuff that should happen when popup window closes here
+  })
+
+  console.log("Есть связь с popup.js...")
+})
+
+
+//---------------------- создает окно  туда вписать локальный файл из расширения
+// chrome.runtime.onMessage.addListener(function(request) {
+//   if (request.type === 'request_password') {
+//       chrome.tabs.create({
+//           url: 'https://yandex.ru',// chrome.extension.getURL('xxx.html'),
+//           active: false
+//       }, function(tab) {
+//           // After the tab has been created, open a window to inject the tab
+//           chrome.windows.create({
+//               tabId: tab.id,
+//               type: 'popup',
+//               focused: true,
+//               width: 300,
+//               height: 300,
+//               top: 100,
+//               left: 100
+//               // incognito, top, left, ...
+//           });
+//       });
+//   }
+// });
+////////////// а это вызовет его например из popup.html
+////////////// chrome.runtime.sendMessage({type:'request_password'});
+
 //-----------------------
 function Log(message, color, obj) {
   // chrome-devtools:  chrome-extension:
@@ -150,7 +190,7 @@ function Log(message, color, obj) {
     case "success":
       color = "Green";
       break;
-      
+
     case "ok":
       color = "Green";
       break;
@@ -176,14 +216,16 @@ function Log(message, color, obj) {
 
     // objmess = objmess.replace(/['"]+/g, '');
     chrome.tabs.executeScript({
-      code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");"
+      code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");",
+      allFrames: true
       //    code: "var obja = JSON.parse('"+objmess+"'); console.log(obja);"
     }, catchLastErrorLog);
   }
   else {
     console.log("%cClearClassId : %c" + message, 'color: blue;font-weight: bold', "color:" + color);
     chrome.tabs.executeScript({
-      code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold','color: " + color + "');"
+      code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold','color: " + color + "');",
+      allFrames: true
     }, catchLastErrorLog);
   }
 }

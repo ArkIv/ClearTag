@@ -1,7 +1,11 @@
-
+@tabsWidth: 400px;
+@areaPaddingHor: 10px;
+html {
+   border-radius: 10px;
+}
  body {
     margin: 10px;
-    background-color: antiquewhite;
+    background-color: #bccbd1;
     /* white-space: nowrap; */
   }
 
@@ -17,25 +21,28 @@
     justify-content: space-between;
   }
 #maskList,#classList,#idList{
-     resize: none; /* Запрещаем изменять размер */
-    width: 298px;
-    padding-right: 0px;
-    padding-left: 0px;
+     resize: vertical; /* Запрещаем изменять размер */
+    width: @tabsWidth - (@areaPaddingHor*2) - 2;
+    padding: 7px @areaPaddingHor;
+   //  padding-right: 5px;
+   //  padding-left: 5px;
     border-left-width: 0px;
     border-right-width: 0px;
+    margin: 0;
+    overflow: auto;
 }
 #testMasklist{
     word-wrap: break-word;
     
 }
 /*  Tabs  основной*/
-.tabs {
-    width: 300px;
+.tabs,.tabs2,.tabs3 {
+    width: @tabsWidth;
     /* max-width: 500px; */
  }
  
  /* Стили для списка вкладок */
- .tab-header {
+ .tab-header,.tab-header2,.tab-header3 {
     list-style: none;
     padding-left: 0;
     display: flex;
@@ -43,9 +50,13 @@
     justify-content: flex-start;
     margin: 0;
  }
+//  .tab-header :nth-child(1n+1){
+//    background-color: red;
+// }
  
  /* Стили для вкладки */
- .tab-header__item {
+ .tab-header__item,.tab-header__item2,.tab-header__item3 {
+    font-weight: bold;
     padding: 5px 20px;
     margin-right: 5px;
     cursor: pointer;
@@ -55,7 +66,7 @@
  }
  
   /* Стили для активной вкладки */
- .tab-header__item.active {
+ .tab-header__item.active,.tab-header__item2.active,.tab-header__item3.active {
 
     color: blue;
     position: relative;
@@ -64,16 +75,21 @@
     border-color: blue;
    
  }
+ // у последней вкладки уберем margin
+ .tab-header :last-child,.tab-header2 :last-child,.tab-header3 :last-child{
+   margin-right: 0;
+}
+
  
  /* Стиль для списка контейнеров с содержимым вкладок */
- .tab-content {
+ .tab-content,.tab-content2,.tab-content3 {
     list-style: none;
     padding: 0;
     margin: 0;
  }
  
  /* Стили для контейнера с содержимым вкладки */
- .tab-content__item {
+ .tab-content__item,.tab-content__item2,.tab-content__item3 {
     display: none;
     /* padding: 20px; */
     padding: 0;
@@ -81,82 +97,16 @@
  }
  
  /* Стили для активного контейнера вкладки */
- .tab-content__item.active {
+ .tab-content__item.active,.tab-content__item2.active,.tab-content__item3.active {
     display: block;
  }
  /*конец Tab основной*/
- /*  Tabs  основной*/
-.tabs2 {
-    width: 300px;
-    /* height: 200px; */
-    /* max-width: 500px; */
- }
- /* Стили для списка вкладок */
-.tab-header2 {
-    list-style: none;
-    padding-left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin: 0;
- }
- /* Стили для вкладки */
-.tab-header__item2 {
-    padding: 5px 20px;
-    /* margin-right: 5px; */
-    cursor: pointer;
-    border: 1px solid #ddd;
-    border-bottom: none;
-    width: 100%;
- }
  
-  /* Стили для активной вкладки */
-.tab-header__item2.active {
-    width: 100%;
-    color: blue;
-    position: relative;
-    top: 1px;
-    background-color: #fff;
-    border-color: blue;
-   
- }
- .tab-header__item3 {
-   padding: 5px 20px;
-   /* margin-right: 5px; */
-   cursor: pointer;
-   border: 1px solid #ddd;
-   border-bottom: none;
-   /* width: 100%; */
-}
-
- /* Стили для активной вкладки */
-.tab-header__item3.active {
-   /* width: 100%; */
-   color: blue;
-   position: relative;
-   top: 1px;
-   background-color: #fff;
-   border-color: blue;
-  
-}
-   /* Стиль для списка контейнеров с содержимым вкладок */
-.tab-content2 {
-    list-style: none;
-    padding: 0;
-    margin: 0;
- }
-  /* Стили для контейнера с содержимым вкладки */
-.tab-content__item2 {
-    display: none;
-    padding: 0;
-    /* border: 1px solid blue; */
-    border-top: 1px solid blue;
- }
-  /* Стили для активного контейнера вкладки */
-.tab-content__item2.active {
-    display: block;
- }
  /*   ----------------------------- */
+ .divForButton{
+    display: flex;
+    justify-content: center;
+ }
  .abutton {
     display: flex;
    background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #599bb3), color-stop(1, #408c99));
@@ -194,3 +144,14 @@
 	top:1px;
 }
  
+/////
+.insertOption{
+   display: flex;
+}
+.selectAddr{
+   width: @tabsWidth;
+   height: 200px;
+}
+.textOption{
+   width: 100%;
+}

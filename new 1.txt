@@ -8,3 +8,7 @@ async function shownInActiveTab() {
   });
   console.log(shown);
 }
+
+
+$ git config --global core.autocrlf false
+$ git config --global core.safecrlf false

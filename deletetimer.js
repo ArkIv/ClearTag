@@ -3,22 +3,27 @@ function startT(){
   // эти переменные уже объявлены ранее в предзагрузке скрипта
   ClearClassBuffer = ClearClassBuffer.split(",");
   ClearIdBuffer = ClearIdBuffer.split(",");
-   Log("Получили список классов: ","info",ClearClassBuffer);
-   Log("Получили список ID: ","info",ClearIdBuffer);
+  var arrC = []; arrC["Class List"] = ClearClassBuffer? ClearClassBuffer:"Нет списка";
+   Log("Получили список классов: ","info",arrC);
+  var arrC = []; arrC["ID List"] = ClearIdBuffer? ClearIdBuffer:"Нет списка";
+   Log("Получили список ID: ","info",arrC);
  //  var arrIdClass = divIdList.innerHTML.split(",");
  //  Log("Читаем с Div список классов: ","info",arrIdClass);
 var countTik=0;
+var countMaxTik=6;
 var sint = setInterval(function(){
-  if(countTik == 0)
-    Log("Поиск классов для очистки, старт...","info" );
+  // if(countTik == 0)
+  //  Log("Поиск классов для очистки, старт...","info" );
     var arr = ClearClassBuffer;
     var i, len;
+    var listErr="";
    for (i = 0, len = arr.length; i < len; ++i) {
     var a = document.getElementsByClassName(arr[i]);
     if(a[0]){
         while(a[0]){
         a[0].parentNode.removeChild(a[0]);
-        Log("очистка "+arr[i]+" yes","success"); 
+   //     Log("очистка "+arr[i]+" yes","success"); 
+        listErr += "Cl: "+arr[i]+",";
         }
       }
    }    
@@ -28,15 +33,30 @@ var sint = setInterval(function(){
    var a = document.getElementById(arr[i]);
    if(a){
        a.parentNode.removeChild(a);
-       Log("очистка Id:"+arr[i]+" yes","success"); 
+       listErr += "Id: "+arr[i]+",";
+   //    Log("очистка Id:"+arr[i]+" yes","success"); 
        }
   }     
-        
-   if(countTik++ >= 6 ){
+    
+   if(countTik >= countMaxTik ){
      clearInterval(sint);
-     Log("Поиск классов окончен... ("+countTik+")","info" );
+     if(listErr.length>0)
+      {
+        var arrC = []; arrC["Clear"] = listErr? listErr.slice(0, -1).split(","):"не обнаружено";
+      Log("Очистка окончена: ","info" ,listErr);
+      } 
+      else
+      Log("Очистка окончена: ","info" ,"Не найдено");
    }
-   
+    else{
+      if(listErr.length>0)
+      {
+        var arrC = []; arrC["Clear"] = listErr? listErr.slice(0, -1).split(","):"не обнаружено";
+        Log("Очистка ("+(countMaxTik - countTik)+"): ","info" ,arrC);
+      }
+
+    }
+ countTik++;     
 },1000);
 }
 startT();

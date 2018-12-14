@@ -8,6 +8,14 @@
  * @param {function(string)} callback called when the URL of the current tab
  *   is found.
  */
+var port = chrome.runtime.connect();
+chrome.browserAction.setBadgeText({ text: 'Привет привет привет' });
+// var background = chrome.extension.getBackgroundPage();
+// addEventListener("unload", function (event) {
+//   background.console.log(Event);
+// }, true);
+
+
 function getCurrentTabUrl(callback) {
   // Query filter to be passed to chrome.tabs.query - see
   // https://developer.chrome.com/extensions/tabs#method-query
@@ -210,17 +218,17 @@ getSavedUrlListEvent("maskList", (savedList) => {  // UrlListEvents интере
      for (index = 0, len = arr.length; index < len; ++index) {
       maskList.value += arr[index].trim()+"\n";//.slice(1, -1)+"\n";
      }
-     onkeyup(null);
+ //    onkeyup(null);
   }
 });
-getSavedClassesList("ClassesList", (savedList) => {
+getSavedClassesList("classList", (savedList) => {
   if (savedList) {
     var arr = savedList.split(',');
     var index, len;
    for (index = 0, len = arr.length; index < len; ++index) {
     classList.value += arr[index].trim()+"\n";//.slice(1, -1)+"\n";
    }
-   onkeyup(null);
+ //  onkeyup(null);
 }
 });
 getSavedIdList("idList", (savedList) => {
@@ -230,7 +238,7 @@ getSavedIdList("idList", (savedList) => {
    for (index = 0, len = arr.length; index < len; ++index) {
     idList.value += arr[index].trim()+"\n";//.slice(1, -1)+"\n";
    }
-   onkeyup(null);
+  // onkeyup(null);
 }
 });
 
@@ -252,7 +260,8 @@ jsTriggers.forEach(function(trigger) {
       content.classList.add('active');
    });
 });
-// Tab - основной конец
+
+// Tab2 - 
 var jsTriggers2 = document.querySelectorAll('.js-tab-trigger2');
 jsTriggers2.forEach(function(trigger) {
    trigger.addEventListener('click', function() {
@@ -269,9 +278,114 @@ jsTriggers2.forEach(function(trigger) {
    });
 });
 // Tab - основной конец
+// Tab2 - 
+var jsTriggers3 = document.querySelectorAll('.js-tab-trigger3');
+jsTriggers3.forEach(function(trigger) {
+   trigger.addEventListener('click', function() {
+      var id = this.getAttribute('data-tab'),
+          content = document.querySelector('.js-tab-content3[data-tab="'+id+'"]'),
+          activeTrigger = document.querySelector('.js-tab-trigger3.active'),
+          activeContent = document.querySelector('.js-tab-content3.active');
+      
+      activeTrigger.classList.remove('active');
+      trigger.classList.add('active');
+      
+      activeContent.classList.remove('active');
+      content.classList.add('active');
+   });
+});
+/////////////////chrome.runtime.sendMessage({type:'request_password'});
+// window.onbeforeunload = function (event) { 
+//   //return (true ? "Измененные данные не сохранены. Закрыть страницу?" : null); 
+//   // в новых это уже не работает выводится стандартный от хрома  отправить null без предупреждения
+//   event.returnValue = "Измененные данные не сохранены. Закрыть страницу?"; 
+//   return "Измененные данные не сохранены. Закрыть страницу?"; 
+// } 
+// сгенерируем событие   проверка кто вызвал event.isTrusted = true  если был человечий клик https://learn.javascript.ru/dispatch-events
+var nabclick = document.querySelector(".js-tab-trigger[data-tab='2']");
+var event = new Event("click");
+nabclick.dispatchEvent(event);
+var nabclick = document.querySelector(".js-tab-trigger2[data-tab='2']");
+var event = new Event("click");
+nabclick.dispatchEvent(event);
+//
+var buttonInsert = document.querySelector(".buttonInsert");
+buttonInsert.addEventListener('click',()=>{
+addSelect();
+})
+var selectAddr = document.querySelector(".selectAddr");
+selectAddr.addEventListener('dblclick',()=>{
+  var textOption = document.querySelector(".textOption ");
+  textOption.value = selectAddr.value;
+  var id = selectAddr.id;
+  selectAddr.options[selectAddr.selectedIndex].remove();
+//   alert(selectAddr.options[selectAddr.selectedIndex].text);
+//   alert(selectAddr.options.length);
+  // var selectA = selectAddr.querySelector("option:[value='"+selectAddr.value+"']");
+  // selectA.remove();//Child(selectA.querySelector('.selectAddr option[value="'+selectA.value+'"]'));
+})
 
+onclick="insertOption();"
+chrome.tabs.query({  // запрос всех вкладок
+  active: true,      // фильтруем нужные
+  currentWindow: true
+}, function (tabs) {    	// получаем отфильтрованные
+  if (tabs[0]) { 
+    var textOption = document.querySelector(".textOption");
+    textOption.value = tabs[0].url;
+  }
+});
+addSelect("Иванов");
+function addSelect(txt){
+  txt = txt? txt : document.querySelector(".textOption").value;
+  var wrapper = document.querySelector(".selectAddr");
+  var opt = document.createElement("option");
+  opt.innerHTML=txt;
+  opt.id = getRandomId();
+  if(!isOptionText(wrapper,txt))
+    {
+    wrapper.appendChild(opt);
+    sortetSelect();
+    }
+   else{
 
-
+   }
+}
+sortetSelect();
+function sortetSelect() {
+  var wrapper = document.querySelector(".selectAddr"),
+  nodes = wrapper.getElementsByTagName("OPTION"),
+  len = nodes.length,
+  sorted = [];
+  while (nodes[0]) {
+    sorted.push(new String(nodes[0].value));
+    sorted[sorted.length-1].element = nodes[0];
+    wrapper.removeChild(nodes[0]);
+  }
+  sorted = sorted.sort();
+  for (var i = 0; i < len; i++) {
+    wrapper.appendChild(sorted[i].element);
+  }
+}
+function getRandomId() {
+  // Math.random should be unique because of its seeding algorithm.
+  // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+  // after the decimal.
+  return '_' + Math.random().toString(36).substr(2, 9);
+};
+function isOptionText(obj,txt){
+  var i;
+  for (i = 0; i < obj.options.length; i++) {
+      if(txt == obj.options[i].text)
+        {
+          obj.style.backgroundColor = "yellow";
+          setTimeout(function(){
+            obj.style.backgroundColor = "white";
+              },50);
+          return true;
+        }
+  }
+}
 // end tabs
 function onkeyup (e){
 
@@ -297,7 +411,7 @@ for (index = 0, len = myList.length; index < len; ++index) {
       else
       ListBuf += myList[index].trim(); 
 }
-testMasklist.textContent = ListBuf;
+//testMasklist.textContent = ListBuf;
 return ListBuf;
 }
 
@@ -367,24 +481,24 @@ function closePopup(){
 
 
 function onkeyupClass (e){
-  var myList = classList.value.split('\n');
-  var testMasklist = document.getElementById("testMasklist");
-  // собираем строку из textArea
-  testMasklist.textContent="";
-  var index, len;
-  for (index = 0, len = myList.length; index < len; ++index) {
-      if(myList[index].trim() != "")
-        if(testMasklist.textContent.length > 0)
-        testMasklist.textContent += ','+myList[index].trim();   
-        else
-        testMasklist.textContent += myList[index].trim(); 
-  }
+  // var myList = classList.value.split('\n');
+  // var testMasklist = document.getElementById("testMasklist");
+  // // собираем строку из textArea
+  // testMasklist.textContent="";
+  // var index, len;
+  // for (index = 0, len = myList.length; index < len; ++index) {
+  //     if(myList[index].trim() != "")
+  //       if(testMasklist.textContent.length > 0)
+  //       testMasklist.textContent += ','+myList[index].trim();   
+  //       else
+  //       testMasklist.textContent += myList[index].trim(); 
+  // }
   
-  // Записываем данные из textArea
-  var SaveUrlListEvents = {};
-  SaveUrlListEvents["ClassesList"] = testMasklist.textContent;
-  if(SaveUrlListEvents["ClassesList"]=="")SaveUrlListEvents["ClassesList"]="globalClass_ET" 
-  chrome.storage.sync.set(SaveUrlListEvents,catchLastError);
+  // // Записываем данные из textArea
+  // var SaveUrlListEvents = {};
+  // SaveUrlListEvents["ClassesList"] = testMasklist.textContent;
+  // if(SaveUrlListEvents["ClassesList"]=="")SaveUrlListEvents["ClassesList"]="globalClass_ET" 
+  // chrome.storage.sync.set(SaveUrlListEvents,catchLastError);
   }
 
   function Log(message,color,obj){
