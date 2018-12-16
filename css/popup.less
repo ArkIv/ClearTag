@@ -1,5 +1,6 @@
 @tabsWidth: 400px;
 @areaPaddingHor: 10px;
+@select: 200px;
 html {
    border-radius: 10px;
 }
@@ -20,7 +21,7 @@ html {
     display: flex;
     justify-content: space-between;
   }
-#maskList,#classList,#idList{
+#maskList,#classList,#idList,.selectUrl,.selectClass,.selectId{
      resize: vertical; /* Запрещаем изменять размер */
     width: @tabsWidth - (@areaPaddingHor*2) - 2;
     padding: 7px @areaPaddingHor;
@@ -30,6 +31,10 @@ html {
     border-right-width: 0px;
     margin: 0;
     overflow: auto;
+}
+.selectUrl,.selectClass,.selectId{
+   width: @tabsWidth - 2;
+   height: @select;
 }
 #testMasklist{
     word-wrap: break-word;
@@ -100,8 +105,12 @@ html {
  .tab-content__item.active,.tab-content__item2.active,.tab-content__item3.active {
     display: block;
  }
- /*конец Tab основной*/
- 
+ // конец Tab основной
+ // выбранный из списка URL
+ .selectedUrl{ 
+    display: flex;
+ }
+
  /*   ----------------------------- */
  .divForButton{
     display: flex;
@@ -148,10 +157,11 @@ html {
 .insertOption{
    display: flex;
 }
-.selectAddr{
-   width: @tabsWidth;
-   height: 200px;
-}
-.textOption{
+
+// .selectClass{
+//    width: @tabsWidth;
+//    height: @select;
+// }
+.textOptionUrl,.textOptionClass,.textOptionId{
    width: 100%;
 }

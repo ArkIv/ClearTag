@@ -1,4 +1,10 @@
 function startT(){
+
+
+  document.addEventListener('click', (element) => {
+    console.log(element);
+  });
+
  // var arrClasses = ClearClassBuffer;
   // эти переменные уже объявлены ранее в предзагрузке скрипта
   ClearClassBuffer = ClearClassBuffer.split(",");

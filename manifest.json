@@ -4,6 +4,7 @@
   "name": "Мое приложение удаляем баннеры",
   "description": "Это приложение удаляет банеры с теле программы Яндекс.",
   "version": "5.0",
+  "author": "Arkadii",
 
   "browser_action": {
     "default_icon": {
@@ -13,16 +14,20 @@
 	"32":"icon/tomas-arad-heart (32).png",
 	"19":"icon/tomas-arad-heart (19).png",
 	"16":"icon/tomas-arad-heart (16).png"
-	},
-    "default_popup": "popup.html"
+  },
+  "default_title": "Clear Class Id",
+  "default_popup": "popup.html",
+  "options_page": "options.html"
   },
   "permissions": [
     "tabs",
     "webRequest",
     "activeTab",
     "storage",
+    "notifications",
 	  "<all_urls>"
   ],
+ 
    "background": {
         "scripts": ["background.js"],
         "persistent": true
