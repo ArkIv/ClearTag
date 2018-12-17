@@ -1,25 +1,43 @@
-logEnabled = true;
+var logEnabled = true;
+var allFrames = false;
 // selectors - здесь будут храниться все данные между чтением и записью в базу
 // работать через  var bgPage = chrome.extension.getBackgroundPage();
 var selectors = {};
 
-// читать после загрузки дерева и скрипта для базы соответственно
+// читать базу после загрузки дерева и скрипта для базы соответственно
 function readBase() {
   localforage.getItem('ClearClassId_Lists').then(function (value) {
     // This code runs once the value has been loaded
     // from the offline store.
-    selectors = value;
-    console.log("Прочитано из базы", value);
+    if (!value) {
+      createBase();
+    }
+    else {
+      selectors = value;
+      console.log("Прочитано из базы", value);
+    }
   }).catch(function (err) {
     // This code runs if there were any errors
     console.log("При чтениииз базы", err);
   });
 }
+function createBase() {
+  selectors["!_____all_url_____!"] = ".content__adv-footer,.globalClass_ETedddddddddddddddddddwsxxxxxxzzz";
+  localforage.setItem('ClearClassId_Lists', selectors/* listAll*/).then(function (value) {
+    // здесь все получено дальнейшие дествия.
+    Log("Создана база", "info", value);
+  }).catch(function (err) {
+    // Произошла ошибка
+    Log("Ошибка создания базы", "error", err);
+  });
+}
+
+
 
 // это только для яндекса
 chrome.webRequest.onCompleted.addListener(function (details) {
   console.log(details);
-  chrome.tabs.executeScript(details.tabId, { file: "deleteclasses.js",allFrames: true },
+  chrome.tabs.executeScript(details.tabId, { file: "deleteclasses.js", allFrames: allFrames },
     () => {
       if (chrome.runtime.lastError) {
         Log("error: не загрузился скрипт \"deleteclasses\"", "error", chrome.runtime.lastError);
@@ -126,7 +144,7 @@ function uploadElement(Tab, savedList) {
   setTimeout(function () {
     chrome.tabs.executeScript(Tab.id, {
       //  code: 'var divClasses = document.createElement("div");divClasses.id="ClearClassesId";divClasses.innerHTML="' + savedList + '";'
-      code: savedList, allFrames: true
+      code: savedList, allFrames: allFrames
     },
       () => {
         if (chrome.runtime.lastError) {
@@ -146,7 +164,7 @@ function uploadElement(Tab, savedList) {
 
 // старт загрузки файла скрипта после установки переменных т.е. создания дива
 function uploadScript(Tab) {
-  chrome.tabs.executeScript(Tab.id, { file: "deletetimer.js" , allFrames: true},
+  chrome.tabs.executeScript(Tab.id, { file: "deletetimer.js", allFrames: allFrames},
     () => {
       if (chrome.runtime.lastError) {
         Log("error: не загрузился скрипт \"deletetimer\"", "error", chrome.runtime.lastError);
@@ -252,7 +270,7 @@ function Log(message, color, obj) {
     // objmess = objmess.replace(/['"]+/g, '');
     chrome.tabs.executeScript({
       code: "console.log('%cClearClassId : %c" +"12 "+ message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");",
-      allFrames: true
+      allFrames: allFrames
       //    code: "var obja = JSON.parse('"+objmess+"'); console.log(obja);"
     }, catchLastErrorLog);
   }
@@ -260,7 +278,7 @@ function Log(message, color, obj) {
     console.log("%cClearClassId : %c" + message, 'color: blue;font-weight: bold', "color:" + color);
     chrome.tabs.executeScript({
       code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold','color: " + color + "');",
-      allFrames: true
+      allFrames: allFrames
     }, catchLastErrorLog);
   }
 }

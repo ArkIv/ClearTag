@@ -2,6 +2,7 @@
 
 var port = chrome.runtime.connect();
 var bgPage = chrome.extension.getBackgroundPage();
+var CurrentSelectUrl = "";
 //bgPage.selectors
 //var selectors = {};
 
@@ -101,7 +102,31 @@ function startTab() {
   var maskList = document.getElementById("maskList");
   var classList = document.getElementById("classList");
   var idList = document.getElementById("idList");
+//===============================
+  var selectUrl = document.querySelector(".selectUrl");
+  var selectClass = document.querySelector(".selectClass");
 
+  //var addrCurrent = document.querySelector(".addrCurrent");
+  var tabHeader_1_4 = document.getElementById("tabHeader_1_4");
+  var tab2 = document.getElementById("tab-2");
+  tab2.style.visibility = "hidden";
+
+  let textOptionUrl = document.querySelector(".textOptionUrl");
+  let textOptionClass = document.querySelector(".textOptionClass");
+  let textOptionId = document.querySelector(".textOptionId");
+  let addrCurrentTooltip = document.querySelector(".addrCurrentTooltip");
+  let addrCurrentSpan = document.querySelector(".addrCurrentSpan");
+    
+//====================================
+
+  let keys = Object.keys(bgPage.selectors);
+  Log("Прочитали селекторы:", "info", keys);
+  selectUrl.innerHTML = "";
+
+  for (let i = 0; i < keys.length; i++) {
+    addSelectUrl(false,keys[i]); // false не устанавливать фокус
+    
+  }
   // вызов функции чтения записанных данных  (savedList - callback функция)
   getSavedUrlListEvent("maskList", (savedList) => {  // UrlListEvents интересно осталось или нет
     if (savedList) {
@@ -200,42 +225,41 @@ function startTab() {
   //
   var buttonInsertUrl = document.querySelector(".buttonInsertUrl");
   var buttonInsertClass = document.querySelector(".buttonInsertClass");
-  var buttonInsertId = document.querySelector(".buttonInsertId");
+
   buttonInsertUrl.addEventListener('click', () => {
-    addSelectUrl();
+    addSelectUrl(true);
   });
   buttonInsertClass.addEventListener('click', () => {
-    addSelectClass();
-  });
-  buttonInsertId.addEventListener('click', () => {
-    addSelectId();
+    addSelectClass(true);
+    saveSelectors();
   });
 
-  var selectUrl = document.querySelector(".selectUrl");
-  var selectClass = document.querySelector(".selectClass");
-  var selectId = document.querySelector(".selectId");
-
-  var addrCurrent = document.querySelector(".addrCurrent");
-  var tabHeader_1_4 = document.getElementById("tabHeader_1_4");
-  var tab2 = document.getElementById("tab-2");
-  tab2.style.visibility = "hidden";
-  var tab3 = document.getElementById("tab-3");
-  tab3.style.visibility = "hidden";
+ 
   tabHeader_1_4.addEventListener("click", () => {
     isSelectedTab2();
   });
   // удаление из списка при дваойном клике  
   // двойной клик удаляем текст из поля выбранного URL
-  let textOptionUrl = document.querySelector(".textOptionUrl");
-  let textOptionClass = document.querySelector(".textOptionClass");
-  let textOptionId = document.querySelector(".textOptionId");
+
   selectUrl.addEventListener('dblclick', removeOptionUrl);
   selectClass.addEventListener('dblclick', removeOptionClass);
-  selectId.addEventListener('dblclick', removeOptionId);
+
 
   function removeOptionUrl(e) {
     if (e.target.nodeName.toLowerCase() == "option") {
-      addrCurrent.innerHTML = "";
+     // bgPage.selectors[CurrentSelectUrl] = selectToStr(selectClass);
+      CurrentSelectUrl = selectUrl.options[selectUrl.selectedIndex].value.trim();
+      if (CurrentSelectUrl == "!_____all_url_____!") {
+        selectUrl.style.backgroundColor = "yellow";
+        setTimeout(function () {
+          selectUrl.style.backgroundColor = "white";
+        }, 50);
+        return;
+      };
+      delete bgPage.selectors[CurrentSelectUrl];
+      CurrentSelectUrl = "";
+      addrCurrentTooltip.innerHTML = "";
+      addrCurrentSpan.innerHTML = "";
       textOptionUrl.value = e.target.value;
       e.target.remove();
       isSelectedTab2();
@@ -245,30 +269,41 @@ function startTab() {
     if (e.target.nodeName.toLowerCase() == "option") {
       textOptionClass.value = e.target.value;
       e.target.remove();
-      //isSelectedTab2();
-      saveSelectors(addrCurrent.innerHTML); // Запись
-    }
-  }
-  function removeOptionId(e) {
-    if (e.target.nodeName.toLowerCase() == "option") {
-      textOptionId.value = e.target.value;
-      e.target.remove();
-      // isSelectedTab2();
+      saveSelectors(); // Запись
     }
   }
   // выделение  и определение адреса при выборе из списка
   selectUrl.addEventListener('change', () => {
-    addrCurrent.innerHTML = selectUrl.options[selectUrl.selectedIndex].value;
-    isSelectedTab2();
+    CurrentSelectUrl = selectUrl.options[selectUrl.selectedIndex].value.trim();
+    addrCurrentTooltip.innerHTML = CurrentSelectUrl; // вплываем
+    addrCurrentSpan.innerHTML = CurrentSelectUrl;  // показываем
+    
+    isSelectedTab2(CurrentSelectUrl);
   });
+
   // проверка что в поле выбора URL чтото есть и включим остальные вкладки
-  function isSelectedTab2() {
-    if (addrCurrent.innerHTML.trim() == "") {
+  function isSelectedTab2(Key) {
+    if (CurrentSelectUrl == "") {
       tab2.style.visibility = "hidden";
-      tab3.style.visibility = "hidden";
-    } else {
+     } else {
       tab2.style.visibility = "visible";
-      tab3.style.visibility = "visible";
+      if (Key) {
+        let str = bgPage.selectors[Key];
+        if (str) {
+          let arr = str.split(',');
+          selectClass.innerHTML = ""; // перед добавлением  удалим все Option
+          for (let i = 0; i < arr.length; i++) {
+            addSelectClass(false,arr[i])
+          }
+     //     sortetSelect(selectClass);
+          Log("Key:", "Blue", str);
+        }
+        else   // раз нет ключей очистим все option
+          selectClass.innerHTML = "";
+      }
+
+     
+
     }
   };
 
@@ -279,42 +314,54 @@ function startTab() {
     currentWindow: true
   }, function (tabs) {    	// получаем отфильтрованные
     if (tabs[0]) {
-      var textOptionUrl = document.querySelector(".textOptionUrl"); // поле ввода
-      textOptionUrl.value = tabs[0].url;
+      
+      textOptionUrl.value = decodeURIComponent(tabs[0].url);
     }
   });
   // добавление строки в Select
-  function addSelectUrl(txt) {
+  function addSelectUrl(focus,txt) {
     txt = txt ? txt : textOptionUrl.value;
     txt = txt.toLowerCase().trim();
+    
     if (!isOptionText(selectUrl, txt))// проверка на существовании в списке Select
     {
+    //  console.log("111111111111111111111111");
       let opt = document.createElement("option");
-      opt.innerHTML = txt;
+      opt.innerHTML = decodeURIComponent(txt);
       selectUrl.appendChild(opt);
-      sortetSelect(selectUrl);
+      sortetSelect(selectUrl, true); // true Записать
+      
+      if (focus == true){
+        selectUrl.selectedIndex = opt.index;
+        selectUrl.focus();
+        CurrentSelectUrl = selectUrl.options[selectUrl.selectedIndex].value.trim();
+        addrCurrentTooltip.innerHTML = CurrentSelectUrl; // вплываем
+        addrCurrentSpan.innerHTML = CurrentSelectUrl;  // показываем
+        isSelectedTab2(CurrentSelectUrl);
+      }
+      
+
     }
   }
-  function addSelectClass(txt) {
+  function addSelectClass(focus, txt) {
     txt = txt ? txt : textOptionClass.value;
     txt = txt.toLowerCase().trim();
     if (!isOptionText(selectClass, txt))// проверка на существовании в списке Select
     {
       let opt = document.createElement("option");
-      opt.innerHTML = txt;
+      if (txt[0] == '.') opt.classList.add("optionClass");
+      else if (txt[0] == '#') opt.classList.add("optionId");
+      else opt.classList.add("optionTag");
+     // opt.selected = true;
+      opt.innerHTML = txt; //strip(txt);
       selectClass.appendChild(opt);
-      sortetSelect(selectClass);
-    }
-  }
-  function addSelectId(txt) {
-    txt = txt ? txt : textOptionId.value;
-    txt = txt.toLowerCase().trim();
-    if (!isOptionText(selectId, txt))// проверка на существовании в списке Select
-    {
-      let opt = document.createElement("option");
-      opt.innerHTML = txt;
-      selectId.appendChild(opt);
-      sortetSelect(selectId);
+      sortetSelect(selectClass);  // save true - записать
+      if (focus == true) {    // если нет focus вообще значит надо фокусировать
+        selectClass.selectedIndex = opt.index;
+        selectClass.focus();
+      }
+     // console.log("llll", opt.index);
+      
     }
   }
   // TODO: надо вывести из автозапуска
@@ -334,8 +381,10 @@ function startTab() {
     for (var i = 0; i < len; i++) {
       obj.appendChild(sorted[i].element);
     }
-    saveSelectors(addrCurrent.innerHTML); // Запись
+   // saveSelectors(CurrentSelectUrl); // Запись
   }
+
+
   function getRandomId() {
     // Math.random should be unique because of its seeding algorithm.
     // Convert it to base 36 (numbers + letters), and grab the first 9 characters
@@ -349,6 +398,8 @@ function startTab() {
    */
   function isOptionText(obj, txt) {
     var i;
+    
+    if (obj.options.length == 0) return false;
     for (i = 0; i < obj.options.length; i++) {
       if (txt.toLowerCase() == obj.options[i].text.toLowerCase() || txt.trim() == "") {
         obj.style.backgroundColor = "yellow";
@@ -437,10 +488,6 @@ function startTab() {
     });
   }
 
-
-
-
-
   // заставим перечитать данные для слушателя 
   function closePopup() {
     var bgPage = chrome.extension.getBackgroundPage();
@@ -448,28 +495,7 @@ function startTab() {
     window.close();
   }
 
-
-  function onkeyupClass(e) {
-    // var myList = classList.value.split('\n');
-    // var testMasklist = document.getElementById("testMasklist");
-    // // собираем строку из textArea
-    // testMasklist.textContent="";
-    // var index, len;
-    // for (index = 0, len = myList.length; index < len; ++index) {
-    //     if(myList[index].trim() != "")
-    //       if(testMasklist.textContent.length > 0)
-    //       testMasklist.textContent += ','+myList[index].trim();   
-    //       else
-    //       testMasklist.textContent += myList[index].trim(); 
-    // }
-
-    // // Записываем данные из textArea
-    // var SaveUrlListEvents = {};
-    // SaveUrlListEvents["ClassesList"] = testMasklist.textContent;
-    // if(SaveUrlListEvents["ClassesList"]=="")SaveUrlListEvents["ClassesList"]="globalClass_ET" 
-    // chrome.storage.sync.set(SaveUrlListEvents,catchLastError);
-  }
-
+// отправим log  в  background
   function Log(message, color, obj) {
     var bgPage = chrome.extension.getBackgroundPage();
     bgPage.Log("[popup] " + message, color, obj);
@@ -483,18 +509,22 @@ function startTab() {
 
     }
   }
-  var saveAllLists = document.querySelector('.saveAllLists');
-  saveAllLists.addEventListener('click', () => {
-    SaveLists();
-  });
   
  // selectClass.addEventListener('onpaste', saveSelectors);
-  function saveSelectors(urlStr) {
-    if (urlStr.trim() == "") return;
-    bgPage.selectors[urlStr] = selectToStr(selectClass);
+  function saveSelectors() {
+    if (CurrentSelectUrl == "") return;
+    bgPage.selectors[CurrentSelectUrl] = selectToStr(selectClass);
     Log("Запись:", "info", bgPage.selectors);
    }
-
+  // преобразуем список в строку с запятыми
+  function selectToStr(Select) {
+    let selectStr = "";
+    for (let i = 0; i < Select.options.length; i++) {
+      if (i == 0) selectStr += Select.options[i].text;
+      else selectStr += "," + Select.options[i].text;
+    }
+    return selectStr;
+  }
 
   // добавим к String функцию byteLength
   // выдает размер в байтах взависимости от размера UNICODE
@@ -519,58 +549,38 @@ function startTab() {
     }
     return count;
   };
-//===================================
-  function SaveLists() {
-    // Записываем данные из textArea
-    let listAll = {};
-    var saveList = {};
-    var maskList = document.querySelector(".selectUrl");
-    saveList["listUrl"] = selectToStr(maskList);
-    if (saveList["listUrl"] == "")
-        saveList["listUrl"] = "http://test.com/test.html"
-    
-    listAll["http://"] = saveList;
-    console.log(listAll);
-    console.log(saveList);
-    console.log(unescape(encodeURIComponent(saveList["listUrl"])).length); // посчет байт Unicode
-    console.log(saveList["listUrl"].length);
-    console.log(saveList["listUrl"].byteLength());
-    chrome.storage.sync.set(listAll, function () {
-      if (chrome.runtime.lastError) {
-        Log("error: ", "error", chrome.runtime.lastError);
-      } else {
-        Log("Сохранили адреса...2", "success");
-        // saveClassList();
 
-      }
-    });
-// Запись в базу
-    // https://localforage.github.io/localForage/#data-api-setitem
-    localforage.setItem('ClearClassId_Lists', bgPage.selectors/* listAll*/ ).then(function (value) {
-      // здесь все получено дальнейшие дествия.
-      Log("В базу","info",value);
-    }).catch(function (err) {
-      // Произошла ошибка
-      Log("Ошибка записи в базу","error",err);
-    });
 
-  }
+	// function strip(html) {
+	// 	var tmp = document.createElement("div");
+  //   tmp.innerHTML = html;
+  //   let str = tmp.innerText
+  //   tmp.remove();
+  //   return str;
+  // }
+  //================== Запись в файл =====================
+          // document.getElementsByTagName('a')[0].onclick = function () {
+          //   var text = "text";
+          //   var csvData = 'data:application/txt;charset=utf-8,' + encodeURIComponent(text);
+          //   this.href = csvData;
+          //   this.target = '_blank';
+          //   this.download = 'txt.txt';
+          // }
+          //   < a href =#> записать</a >
+  //================== Запись в файл  конец ===============
 
-  // преобразуем список в строку с запятыми
-  function selectToStr(Select) {
-    let selectStr = "";
-    for (let i = 0; i < Select.options.length; i++) {
-      if (i == 0) selectStr += Select.options[i].text;
-      else selectStr += "," + Select.options[i].text;
-    }
-    return selectStr;
-  }
-  // localforage.getItem('somekey').then(function (value) {
-  //   // This code runs once the value has been loaded
-  //   // from the offline store.
-  //   console.log(value);
-  // }).catch(function (err) {
-  //   // This code runs if there were any errors
-  //   console.log(err);
-  // });
+  //================== Чтение из файла ====================
+          // function readFile(object) {
+          //   var file = object.files[0]
+          //   var reader = new FileReader()
+          //   reader.onload = function () {
+          //     document.getElementById('out').innerHTML = reader.result
+          //   }
+          //   reader.readAsText(file)
+          // }
+          // <input type="file" id="file">
+          //   <button onclick="readFile(document.getElementById('file'))">Read!</button>
+          //   <div id="out"></div>
+  //================== Чтение из файла конец ==============
+
 } //  общий конец

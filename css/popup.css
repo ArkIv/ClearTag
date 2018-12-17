@@ -110,11 +110,41 @@ h1 {
 }
 .selectedUrl {
   display: flex;
+  font-size: 16px;
+  background-color: #ddd;
+}
+.addrCurrent {
+  overflow: hidden;
+}
+.addrCurrentSpan {
+  white-space: nowrap;
+  overflow: hidden;
+}
+.addrCurrentTooltip {
+  display: none;
+  background-color: bisque;
+  font-size: 16px;
+  word-break: break-all;
+  position: absolute;
+  padding: 5px;
+  z-index: 3000;
+}
+.addrCurrent:hover .addrCurrentTooltip {
+  display: block;
 }
 /*   ----------------------------- */
 .divForButton {
   display: flex;
   justify-content: center;
+}
+.optionTag {
+  background-color: #ff7cb3;
+}
+.optionClass {
+  background-color: #79ff8b;
+}
+.optionId {
+  background-color: #ffe694;
 }
 .abutton {
   display: flex;

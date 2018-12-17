@@ -65,10 +65,10 @@
       <b>Введите классы для отслеживания:</b><br>
       <textarea wrap="off" rows="15"  id="classList" name="classes"></textarea> 
    </li>
-   <li class="tab-content__item2 js-tab-content2" data-tab="3">
+   <!-- <li class="tab-content__item2 js-tab-content2" data-tab="3">
       <b>Введите ID элементов для отслеживания:</b><br>
       <textarea wrap="off" rows="15"  id="idList" name="IDs"></textarea>
-   </li> 
+   </li>  -->
    <!-- <li class="tab-content__item2 js-tab-content2" data-tab="4">
       <b>Установки:</b><br>
    </li>  -->
@@ -86,27 +86,21 @@
        </li>
        <li class="tab-content__item js-tab-content" data-tab="4">
 <!--  Контейнер с вкладками test  -->
-<div class="selectedUrl"><div><b>Url: </b></div><div class="addrCurrent"></div></div>
+<div class="selectedUrl"><div style="padding-right: 5px;"><b>Url:  </b></div><div class="addrCurrent"><div class="addrCurrentSpan"></div>
+   <span class="addrCurrentTooltip">sssssssssssss</span>
+</div></div>
       <div class="tabs3">
         <ul class="tab-header3">
             <li id="tab-1" class="tab-header__item3 js-tab-trigger3 active" data-tab="1">URL-mask</li>
             <li id="tab-2" class="tab-header__item3 js-tab-trigger3 " data-tab="2">Селекторы</li>
-            <li id="tab-3" class="tab-header__item3 js-tab-trigger3" data-tab="3">ID</li>
+            <!-- <li id="tab-3" class="tab-header__item3 js-tab-trigger3" data-tab="3">ID</li> -->
             <!-- <li class="tab-header__item3 js-tab-trigger2" data-tab="4">ID</li> -->
          </ul>
          <ul class="tab-content3">
             <li class="tab-content__item3 js-tab-content3 active" data-tab="1">
                   <select multiple class="selectUrl">
-                        <option>Блины</option>
-                        <option>Запеканка</option>
-                        <option>МороженкаМо роженкаМороженкаМороженк аМороженкаМороженкаМо роженкаМороженка </option>
-                        <option>Блины</option>
-                        <option>Запеканка</option>
-                        <option>Мороженка </option>
-                        <option>Запеканка</option>
-                        <option>Мороженка </option>
-                        <option>Запеканка</option>
-                        <option>Мороженка </option>
+                        
+                        <option>Мороженка2 </option>
                       </select>
                       <div class="insertOption" ><input type="text" class="textOptionUrl" autofocus></input><button class="buttonInsertUrl">Добавить</button></div>
             </li>
@@ -114,12 +108,11 @@
             <select multiple class="selectClass">
                <option>1111</option>
                <option>2222222</option>
-               <option>МороженкаМо роженкаМороженкаМороженк аМороженкаМороженкаМо роженкаМороженка </option>
-               <option>Блины</option>
+                              <option>Блины</option>
             </select>
             <div class="insertOption"><input type="text" class="textOptionClass" autofocus></input><button class="buttonInsertClass">Добавить</button></div>
             </li>
-            <li class="tab-content__item3 js-tab-content3 " data-tab="3">
+            <!-- <li class="tab-content__item3 js-tab-content3 " data-tab="3">
 <select multiple class="selectId">
    <option>1111</option>
    <option>2222222</option>
@@ -129,7 +122,7 @@
 </select>
 <div class="insertOption"><input type="text" class="textOptionId" autofocus></input><button class="buttonInsertId">Добавить</button></div>
 
-            </li>
+            </li> -->
          </ul>
          </div>
          <div><button class="saveAllLists">Привет</button></div>
