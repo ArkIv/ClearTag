@@ -29,7 +29,7 @@
   ],
  
    "background": {
-        "scripts": ["background.js"],
+        "scripts": ["background.js","js/localforage.min.js"],
         "persistent": true
     }
 }

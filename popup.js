@@ -1,6 +1,12 @@
 // Copyright (c) 2018 The ANI Software Authors. All rights reserved.
 
 var port = chrome.runtime.connect();
+var bgPage = chrome.extension.getBackgroundPage();
+//bgPage.selectors
+//var selectors = {};
+
+
+//selectors["ClearClassId"] = [];
 // на иконке текст 4 символа
 chrome.browserAction.setBadgeText({ text: 'Ура!' });
 
@@ -240,6 +246,7 @@ function startTab() {
       textOptionClass.value = e.target.value;
       e.target.remove();
       //isSelectedTab2();
+      saveSelectors(addrCurrent.innerHTML); // Запись
     }
   }
   function removeOptionId(e) {
@@ -279,6 +286,7 @@ function startTab() {
   // добавление строки в Select
   function addSelectUrl(txt) {
     txt = txt ? txt : textOptionUrl.value;
+    txt = txt.toLowerCase().trim();
     if (!isOptionText(selectUrl, txt))// проверка на существовании в списке Select
     {
       let opt = document.createElement("option");
@@ -289,6 +297,7 @@ function startTab() {
   }
   function addSelectClass(txt) {
     txt = txt ? txt : textOptionClass.value;
+    txt = txt.toLowerCase().trim();
     if (!isOptionText(selectClass, txt))// проверка на существовании в списке Select
     {
       let opt = document.createElement("option");
@@ -299,6 +308,7 @@ function startTab() {
   }
   function addSelectId(txt) {
     txt = txt ? txt : textOptionId.value;
+    txt = txt.toLowerCase().trim();
     if (!isOptionText(selectId, txt))// проверка на существовании в списке Select
     {
       let opt = document.createElement("option");
@@ -324,6 +334,7 @@ function startTab() {
     for (var i = 0; i < len; i++) {
       obj.appendChild(sorted[i].element);
     }
+    saveSelectors(addrCurrent.innerHTML); // Запись
   }
   function getRandomId() {
     // Math.random should be unique because of its seeding algorithm.
@@ -462,7 +473,7 @@ function startTab() {
   function Log(message, color, obj) {
     var bgPage = chrome.extension.getBackgroundPage();
     bgPage.Log("[popup] " + message, color, obj);
-    console.log(message);
+    console.log(message,obj);
   }
   function catchLastError() {
     if (chrome.runtime.lastError) {
@@ -476,18 +487,54 @@ function startTab() {
   saveAllLists.addEventListener('click', () => {
     SaveLists();
   });
+  
+ // selectClass.addEventListener('onpaste', saveSelectors);
+  function saveSelectors(urlStr) {
+    if (urlStr.trim() == "") return;
+    bgPage.selectors[urlStr] = selectToStr(selectClass);
+    Log("Запись:", "info", bgPage.selectors);
+   }
+
+
+  // добавим к String функцию byteLength
+  // выдает размер в байтах взависимости от размера UNICODE
+  // str.byteLength()  
+  String.prototype.byteLength = function () {
+    var str = this, length = str.length, count = 0, i = 0, ch = 0;
+    for (i; i < length; i++) {
+      ch = str.charCodeAt(i);
+      if (ch <= 127) {
+        count++;
+      } else if (ch <= 2047) {
+        count += 2;
+      } else if (ch <= 65535) {
+        count += 3;
+      } else if (ch <= 2097151) {
+        count += 4;
+      } else if (ch <= 67108863) {
+        count += 5;
+      } else {
+        count += 6;
+      }
+    }
+    return count;
+  };
+//===================================
   function SaveLists() {
     // Записываем данные из textArea
     let listAll = {};
     var saveList = {};
     var maskList = document.querySelector(".selectUrl");
-    saveList["listUrl"] = getListString(maskList);
+    saveList["listUrl"] = selectToStr(maskList);
     if (saveList["listUrl"] == "")
         saveList["listUrl"] = "http://test.com/test.html"
     
-    listAll["привет всем"] = saveList;
+    listAll["http://"] = saveList;
     console.log(listAll);
     console.log(saveList);
+    console.log(unescape(encodeURIComponent(saveList["listUrl"])).length); // посчет байт Unicode
+    console.log(saveList["listUrl"].length);
+    console.log(saveList["listUrl"].byteLength());
     chrome.storage.sync.set(listAll, function () {
       if (chrome.runtime.lastError) {
         Log("error: ", "error", chrome.runtime.lastError);
@@ -497,6 +544,33 @@ function startTab() {
 
       }
     });
+// Запись в базу
+    // https://localforage.github.io/localForage/#data-api-setitem
+    localforage.setItem('ClearClassId_Lists', bgPage.selectors/* listAll*/ ).then(function (value) {
+      // здесь все получено дальнейшие дествия.
+      Log("В базу","info",value);
+    }).catch(function (err) {
+      // Произошла ошибка
+      Log("Ошибка записи в базу","error",err);
+    });
+
   }
 
-}
+  // преобразуем список в строку с запятыми
+  function selectToStr(Select) {
+    let selectStr = "";
+    for (let i = 0; i < Select.options.length; i++) {
+      if (i == 0) selectStr += Select.options[i].text;
+      else selectStr += "," + Select.options[i].text;
+    }
+    return selectStr;
+  }
+  // localforage.getItem('somekey').then(function (value) {
+  //   // This code runs once the value has been loaded
+  //   // from the offline store.
+  //   console.log(value);
+  // }).catch(function (err) {
+  //   // This code runs if there were any errors
+  //   console.log(err);
+  // });
+} //  общий конец

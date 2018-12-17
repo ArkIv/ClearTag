@@ -1,5 +1,20 @@
 logEnabled = true;
+// selectors - здесь будут храниться все данные между чтением и записью в базу
+// работать через  var bgPage = chrome.extension.getBackgroundPage();
+var selectors = {};
 
+// читать после загрузки дерева и скрипта для базы соответственно
+function readBase() {
+  localforage.getItem('ClearClassId_Lists').then(function (value) {
+    // This code runs once the value has been loaded
+    // from the offline store.
+    selectors = value;
+    console.log("Прочитано из базы", value);
+  }).catch(function (err) {
+    // This code runs if there were any errors
+    console.log("При чтениииз базы", err);
+  });
+}
 
 // это только для яндекса
 chrome.webRequest.onCompleted.addListener(function (details) {
@@ -19,11 +34,22 @@ chrome.webRequest.onCompleted.addListener(function (details) {
 // старт загрузка background
 document.addEventListener('DOMContentLoaded', () => {
   Log("есть DOMContentLoaded", "info", "test");
+  readBase();
   startBackground();
 });
 
 // старт и перезагрузка прослушивателя
 function startBackground() {
+
+  localforage.getItem('ClearClassId_Lists').then(function (value) {
+    Log("Загрузили из базы:", "info", value);
+    startBackground2();
+  }).catch(function (err) {
+    // This code runs if there were any errors
+    console.log(err);
+  });
+}
+function startBackground2(){
   // вызов функции чтения записанных данных масок адресов (savedList - callback функция)
   getList("maskList", (savedList) => {
     var urlList = "";
@@ -152,6 +178,14 @@ chrome.runtime.onConnect.addListener(function (externalPort) {
   externalPort.onDisconnect.addListener(function () {
     console.log("Отключились от Popup.js  окно закрылось.")
     // Do stuff that should happen when popup window closes here
+        // https://localforage.github.io/localForage/#data-api-setitem
+    localforage.setItem('ClearClassId_Lists', selectors/* listAll*/ ).then(function (value) {
+      // здесь все получено дальнейшие дествия.
+      Log("Сохранено в базу при закрытии","info",value);
+    }).catch(function (err) {
+      // Произошла ошибка
+      Log("Ошибка записи в базу","error",err);
+    });
   })
 
   console.log("Есть связь с popup.js...")
@@ -214,11 +248,10 @@ function Log(message, color, obj) {
 
   if (obj) {
     var objmess = JSON.stringify(obj);//obj.message;
-    console.log("%cClearClassId : %c" + message, 'color: blue;font-weight: bold', "color:" + color, obj);
-
+     console.log("%cClearClassId : %c" + message, 'color: blue;font-weight: bold', "color:" + color, obj);
     // objmess = objmess.replace(/['"]+/g, '');
     chrome.tabs.executeScript({
-      code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");",
+      code: "console.log('%cClearClassId : %c" +"12 "+ message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");",
       allFrames: true
       //    code: "var obja = JSON.parse('"+objmess+"'); console.log(obja);"
     }, catchLastErrorLog);

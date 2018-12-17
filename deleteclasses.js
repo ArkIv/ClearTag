@@ -14,25 +14,41 @@
   removeTags();
 function removeTags(){
   
-  var arrClass = 'super-banner,main-controller__adv-bottom,footer,header,recommended-top,grid-chunk__column-box,\
-  grid-chunk__adv-wide,content__adv-aside,content__adv-footer';
-  arrClass = arrClass.split(",");
-  var arr = arrClass;
-  var i, len;
- // Log("yandex очистка старт...","success");
-  var listErr="";
- for (i = 0, len = arr.length; i < len; ++i) {
-  var a = document.getElementsByClassName(arr[i]);
-  if(a[0]){
-     
-      while(a[0]){
-      a[0].parentNode.removeChild(a[0]);
-    //  Log("yandex удаление: "+arr[i]+" yes","maroon"); 
-      listErr += arr[i]+",";
+  var arrClass = '.super-banner,.main-controller__adv-bottom,.footer,header,.recommended-top,.grid-chunk__column-box,\
+  .grid-chunk__adv-wide,.content__adv-aside,.content__adv-footer';
+  var arrClass = document.querySelectorAll(arrClass);
+  let listErr = "";
+  for (let i = 0; i < arrClass.length;i++) {
+    
+    try {
+      if (arrClass[i]) {
+        arrClass[i].parentNode.removeChild(arrClass[i]);
+        listErr += arrClass[i].className + ",";
       }
-      
+    } catch (e) {
+      Log("Ошибка","error",e)
     }
-   } 
+  }
+    
+  /////////////////////////////
+//   arrClass = arrClass.split(",");
+//   var arr = arrClass;
+//   var i, len;
+//  // Log("yandex очистка старт...","success");
+//   var listErr="";
+//  for (i = 0, len = arr.length; i < len; ++i) {
+//   var a = document.getElementsByClassName(arr[i]);
+//   if(a[0]){
+     
+//       while(a[0]){
+//       a[0].parentNode.removeChild(a[0]);
+//     //  Log("yandex удаление: "+arr[i]+" yes","maroon"); 
+//       listErr += arr[i]+",";
+//       }
+      
+//     }
+//   } 
+  ///////////////////////////////
    var arrC = []; arrC["Clear"] = listErr? listErr.slice(0, -1).split(","):"не обнаружено";
    Log("yandex очистка выполнена.","success",arrC);  
 
