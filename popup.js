@@ -1,13 +1,14 @@
 // Copyright (c) 2018 The ANI Software Authors. All rights reserved.
 
-var port = chrome.runtime.connect();
+var port = chrome.runtime.connect({ name: "popupConnectFlag" });
+port.postMessage({ event: "OpenAndConnect" });
+
 var bgPage = chrome.extension.getBackgroundPage();
 var CurrentSelectUrl = "";
 //bgPage.selectors
 //var selectors = {};
-
-
 //selectors["ClearClassId"] = [];
+
 // на иконке текст 4 символа
 chrome.browserAction.setBadgeText({ text: 'Ура!' });
 
@@ -31,19 +32,10 @@ function getCurrentTabUrl(callback) {
 
     callback(url);
   });
-
-  // Most methods of the Chrome extension APIs are asynchronous. This means that
-  // you CANNOT do something like this:
-  //
-  // var url;
-  // chrome.tabs.query(queryInfo, (tabs) => {
-  //   url = tabs[0].url;
-  // });
-  // alert(url); // Shows "undefined", because chrome.tabs.query is async.
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  startTab();
+  startClearClassId();
 
   var inf = document.getElementsByClassName("textInfo");
   inf[0].innerHTML = textInfo;
@@ -51,8 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 function clickButton() {
-  //	var ddd = document.getElementById('background');
-
   var script = '\
   var u = document.getElementsByClassName("super-banner");\
   if(u[0])u[0].remove();\
@@ -76,44 +66,23 @@ function clickButton() {
   });
 }
 
-// tabs
-// чтение записанных данных Адреса
-function getSavedUrlListEvent(key, callback) {
-  chrome.storage.sync.get(key, (items) => {
-    callback(chrome.runtime.lastError ? null : items[key]);
-  });
-}
-// чтение записанных данных  Класы
-function getSavedClassesList(key, callback) {
-  chrome.storage.sync.get(key, (items) => {
-    callback(chrome.runtime.lastError ? null : items[key]);
-  });
-}
-// чтение записанных данных  Id
-function getSavedIdList(key, callback) {
-  chrome.storage.sync.get(key, (items) => {
-    callback(chrome.runtime.lastError ? null : items[key]);
-  });
-}
-/**  startTab это срабатывает после загрузки страницы popup
+/**  startClearClassId это срабатывает после загрузки страницы popup
  * 
  */
-function startTab() {
-  var maskList = document.getElementById("maskList");
-  var classList = document.getElementById("classList");
-  var idList = document.getElementById("idList");
+function startClearClassId() {
+
 //===============================
   var selectUrl = document.querySelector(".selectUrl");
   var selectClass = document.querySelector(".selectClass");
 
   //var addrCurrent = document.querySelector(".addrCurrent");
-  var tabHeader_1_4 = document.getElementById("tabHeader_1_4");
-  var tab2 = document.getElementById("tab-2");
+  var tabHeader_1_4 = document.getElementById("tabHeader_1_4"); // вкладка тест
+  var tab2 = document.getElementById("tab-2"); // Селекторы
   tab2.style.visibility = "hidden";
 
   let textOptionUrl = document.querySelector(".textOptionUrl");
   let textOptionClass = document.querySelector(".textOptionClass");
-  let textOptionId = document.querySelector(".textOptionId");
+  // let textOptionId = document.querySelector(".textOptionId");
   let addrCurrentTooltip = document.querySelector(".addrCurrentTooltip");
   let addrCurrentSpan = document.querySelector(".addrCurrentSpan");
     
@@ -127,38 +96,7 @@ function startTab() {
     addSelectUrl(false,keys[i]); // false не устанавливать фокус
     
   }
-  // вызов функции чтения записанных данных  (savedList - callback функция)
-  getSavedUrlListEvent("maskList", (savedList) => {  // UrlListEvents интересно осталось или нет
-    if (savedList) {
-      var arr = savedList.split(',');
-      var index, len;
-      for (index = 0, len = arr.length; index < len; ++index) {
-        maskList.value += arr[index].trim() + "\n";//.slice(1, -1)+"\n";
-      }
-    }
-  });
-  getSavedClassesList("classList", (savedList) => {
-    if (savedList) {
-      var arr = savedList.split(',');
-      var index, len;
-      for (index = 0, len = arr.length; index < len; ++index) {
-        classList.value += arr[index].trim() + "\n";//.slice(1, -1)+"\n";
-      }
-    }
-  });
-  getSavedIdList("idList", (savedList) => {
-    if (savedList) {
-      var arr = savedList.split(',');
-      var index, len;
-      for (index = 0, len = arr.length; index < len; ++index) {
-        idList.value += arr[index].trim() + "\n";//.slice(1, -1)+"\n";
-      }
-    }
-  });
-
-
-
-  // это к Tab - основной
+   // это к Tab - основной
   var jsTriggers = document.querySelectorAll('.js-tab-trigger');
   jsTriggers.forEach(function (trigger) {
     trigger.addEventListener('click', function () {
@@ -174,25 +112,7 @@ function startTab() {
       content.classList.add('active');
     });
   });
-
-  // Tab2 - 
-  var jsTriggers2 = document.querySelectorAll('.js-tab-trigger2');
-  jsTriggers2.forEach(function (trigger) {
-    trigger.addEventListener('click', function () {
-      var id = this.getAttribute('data-tab'),
-        content = document.querySelector('.js-tab-content2[data-tab="' + id + '"]'),
-        activeTrigger = document.querySelector('.js-tab-trigger2.active'),
-        activeContent = document.querySelector('.js-tab-content2.active');
-
-      activeTrigger.classList.remove('active');
-      trigger.classList.add('active');
-
-      activeContent.classList.remove('active');
-      content.classList.add('active');
-    });
-  });
-  // Tab - основной конец
-  // Tab2 - 
+ 
   var jsTriggers3 = document.querySelectorAll('.js-tab-trigger3');
   jsTriggers3.forEach(function (trigger) {
     trigger.addEventListener('click', function () {
@@ -315,9 +235,19 @@ function startTab() {
   }, function (tabs) {    	// получаем отфильтрованные
     if (tabs[0]) {
       
-      textOptionUrl.value = decodeURIComponent(tabs[0].url);
+      textOptionUrl.value = getFilterUrl(tabs[0].url);// decodeURIComponent(tabs[0].url);
     }
   });
+
+  // фильтруем строку до параметров если они есть
+  function getFilterUrl(url) {
+    let idx = url.indexOf("&");
+    if (idx >= 0)
+      url = url.substr(0, idx);
+    return decodeURIComponent(url);
+  }
+
+
   // добавление строки в Select
   function addSelectUrl(focus,txt) {
     txt = txt ? txt : textOptionUrl.value;
@@ -345,7 +275,7 @@ function startTab() {
   }
   function addSelectClass(focus, txt) {
     txt = txt ? txt : textOptionClass.value;
-    txt = txt.toLowerCase().trim();
+    txt = txt.trim();
     if (!isOptionText(selectClass, txt))// проверка на существовании в списке Select
     {
       let opt = document.createElement("option");
@@ -377,7 +307,7 @@ function startTab() {
       sorted[sorted.length - 1].element = nodes[0];
       obj.removeChild(nodes[0]);
     }
-    sorted = sorted.sort();
+    sorted = sorted.sort(); // для цифр (a,b) => { return a - b;}
     for (var i = 0; i < len; i++) {
       obj.appendChild(sorted[i].element);
     }
@@ -385,12 +315,7 @@ function startTab() {
   }
 
 
-  function getRandomId() {
-    // Math.random should be unique because of its seeding algorithm.
-    // Convert it to base 36 (numbers + letters), and grab the first 9 characters
-    // after the decimal.
-    return '_' + Math.random().toString(36).substr(2, 9);
-  };
+
   /** проверка на существовании txt в объекте Select  obj 
    * 
    * @param {*} obj 
@@ -401,7 +326,17 @@ function startTab() {
     
     if (obj.options.length == 0) return false;
     for (i = 0; i < obj.options.length; i++) {
-      if (txt.toLowerCase() == obj.options[i].text.toLowerCase() || txt.trim() == "") {
+// /[\W\w]*:\/\/[\W\w]*rkt[\W\w]*а[\W\w]*ов[\W\w]*/i
+      regex = obj.options[i].text.toLowerCase();
+      regex = regex.replace(new RegExp(/[[\^$.|?+()\/]/g), "\\$&"); // убрал звездочку
+     // regex = regex.replace(/\//gi, "\\/");
+      regex = regex.replace(/\*/gi, "[\\W\\w]*")+"$";
+     var regex = new RegExp(regex);
+      if (regex.test(txt.trim())){
+        obj.selectedIndex = obj.options[i].index;
+        obj.focus();
+
+  //   if (txt.toLowerCase() == obj.options[i].text.toLowerCase() || txt.trim() == "") {
         obj.style.backgroundColor = "yellow";
         setTimeout(function () {
           obj.style.backgroundColor = "white";
@@ -410,13 +345,6 @@ function startTab() {
       }
     }
   }
-  // end tabs
-  var buttonDelListener = document.getElementById('buttonDelListener');
-  buttonDelListener.addEventListener('click', () => {
-    clickSaveRestart();
-  });
-
-
   // преобразуем список в строку с запятыми
   function getListString(List) {
     var myList = List.value.split('\n');
@@ -435,58 +363,7 @@ function startTab() {
     return ListBuf;
   }
 
-  // Запись данных и перезагрузка слушателя
-  function clickSaveRestart() {
-    // Записываем данные из textArea
-    var maskSaveList = {};
-    var maskList = document.getElementById("maskList");
-    maskSaveList["maskList"] = getListString(maskList);
-    if (maskSaveList["maskList"] == "")
-      maskSaveList["maskList"] = "http://test.com/test.html"
-
-    chrome.storage.sync.set(maskSaveList, function () {
-      if (chrome.runtime.lastError) {
-        Log("error: ", "error", chrome.runtime.lastError);
-      } else {
-        Log("Сохранили адреса...", "success");
-        saveClassList();
-
-      }
-    });
-  }
-
-  function saveClassList() {
-    // Записываем данные из textArea
-    var maskSaveList = {};
-    var maskList = document.getElementById("classList");
-    maskSaveList["classList"] = getListString(maskList);
-    if (maskSaveList["classList"] == "")
-      maskSaveList["classList"] = "globalClass_ET";
-    chrome.storage.sync.set(maskSaveList, function () {
-      if (chrome.runtime.lastError) {
-        Log("Ошибка записи списка классов", "error", chrome.runtime.lastError);
-      } else {
-        Log("Сохранили classList...", "success");
-        saveIdList();
-      }
-    });
-  }
-  function saveIdList() {
-    // Записываем данные из textArea
-    var maskSaveList = {};
-    var maskList = document.getElementById("idList");
-    maskSaveList["idList"] = getListString(maskList);
-    if (maskSaveList["idList"] == "")
-      maskSaveList["idList"] = "";
-    chrome.storage.sync.set(maskSaveList, function () {
-      if (chrome.runtime.lastError) {
-        Log("Ошибка записи списка ID", "error", chrome.runtime.lastError);
-      } else {
-        Log("Сохранили idList...", "success");
-        closePopup();
-      }
-    });
-  }
+  
 
   // заставим перечитать данные для слушателя 
   function closePopup() {
@@ -499,17 +376,9 @@ function startTab() {
   function Log(message, color, obj) {
     var bgPage = chrome.extension.getBackgroundPage();
     bgPage.Log("[popup] " + message, color, obj);
-    console.log(message,obj);
+    console.log("[popup] " + message,obj);
   }
-  function catchLastError() {
-    if (chrome.runtime.lastError) {
-      Log("error: ", "error", chrome.runtime.lastError);
-    } else {
-      Log("Скрипт загружен...", "success");
-
-    }
-  }
-  
+ 
  // selectClass.addEventListener('onpaste', saveSelectors);
   function saveSelectors() {
     if (CurrentSelectUrl == "") return;
@@ -549,8 +418,16 @@ function startTab() {
     }
     return count;
   };
+} //  общий конец
 
-
+  //================== Случайное  число ============
+  // function getRandomId() {
+  //   // Math.random should be unique because of its seeding algorithm.
+  //   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
+  //   // after the decimal.
+  //   return '_' + Math.random().toString(36).substr(2, 9);
+  // };
+  //================== удалит теги путем записи HTML чтения тхт из объекта ====================
 	// function strip(html) {
 	// 	var tmp = document.createElement("div");
   //   tmp.innerHTML = html;
@@ -582,5 +459,20 @@ function startTab() {
           //   <button onclick="readFile(document.getElementById('file'))">Read!</button>
           //   <div id="out"></div>
   //================== Чтение из файла конец ==============
+  // ================= Блокировка запросов по адресам
+  // в Манифест надо  "webRequest"   и это  "webRequestBlocking"
+// Блокирует запросы по маске
+          // chrome.webRequest.onBeforeRequest.addListener(
+          //   function (details) { return { cancel: true }; },
+          //   { urls: ["*://www.evil.com/*"] },
+          //   ["blocking"]);
+          //   ///  или так
+          // chrome.webRequest.onBeforeRequest.addListener(
+          //   function (details) {
+          //     return { cancel: details.url.indexOf("://www.evil.com/") != -1 };
+          //   },
+          //   { urls: ["<all_urls>"] },
+          //   ["blocking"]);
+  //=======================
 
-} //  общий конец
+

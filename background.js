@@ -1,8 +1,25 @@
+
 var logEnabled = true;
 var allFrames = false;
 // selectors - здесь будут храниться все данные между чтением и записью в базу
 // работать через  var bgPage = chrome.extension.getBackgroundPage();
 var selectors = {};
+//===================== слушаем порт
+// chrome.runtime.onConnect.addListener(function (port) {
+//   //console.assert(port.name == "knockknock");
+//   //if (!port.name) return;
+
+//   port.onMessage.addListener(function (msg,port) {
+//     console.log(msg , port.sender.tab.id);
+//   //   if (msg.joke == "Knock knock")
+//   //     port.postMessage({ question: "Who's there?" });
+//   //   else if (msg.answer == "Madame")
+//   //     port.postMessage({ question: "Madame who?" });
+//   //   else if (msg.answer == "Madame... Bovary")
+//   //     port.postMessage({ question: "I don't get it." });
+//    });
+// });
+//=============================================================
 
 // читать базу после загрузки дерева и скрипта для базы соответственно
 function readBase() {
@@ -21,8 +38,9 @@ function readBase() {
     console.log("При чтениииз базы", err);
   });
 }
+// Создание базы
 function createBase() {
-  selectors["!_____all_url_____!"] = ".content__adv-footer,.globalClass_ETedddddddddddddddddddwsxxxxxxzzz";
+  selectors["!_____all_url_____!"] = ".content__adv-footer,.globalClass_ET";
   localforage.setItem('ClearClassId_Lists', selectors/* listAll*/).then(function (value) {
     // здесь все получено дальнейшие дествия.
     Log("Создана база", "info", value);
@@ -31,6 +49,112 @@ function createBase() {
     Log("Ошибка создания базы", "error", err);
   });
 }
+let test = false;   // для подсчета tik
+chrome.tabs.onUpdated.addListener(updateTab);
+
+function updateTab(tabId, changeInfo,tab) {
+  let timer = setTimeout((tab) => {
+    if (changeInfo.status == "complete") {
+      Log("Загрузили.....","info", tab.url);
+      checkUrl2(tab.url, tabId);             // проверять дойной вызов
+      // может вызывать только функцию коль она там уже есть ??
+      test = true;
+      clearTimeout(timer);
+    }
+  }, 1000,tab);
+}
+
+// Блоеируем загрузку страниц скриптов и тд
+chrome.webRequest.onBeforeRequest.addListener(
+            function (details) { return { cancel: true }; },
+  {
+    urls: ["https://yandex.ru/clck/click/*", "https://mc.yandex.ru/clmap/*",
+      "https://files.cointraffic.io/js/pnd/script.js", "https://mc.yandex.ru/watch/*",
+      "http://api.solvemedia.com/papi/_puzzle.js",
+    "http://mell,owads.com/js/*"]
+  },
+  ["blocking"]);
+            
+
+
+
+
+// Прослушиваем все http b https
+chrome.webRequest.onCompleted.addListener(function (Details) { 
+ //  checkUrl2(Details.url.toLowerCase(),Details.tabId);
+}, { urls: ['http://*/*', 'https://*/*'] }, ['responseHeaders']);
+
+// поиск соответствия урл-вкладки с нашим списком урл.
+// если найдено в списке запустим функцию
+function checkUrl2(url,tabId) {
+  if (selectors)
+  for(var k in selectors)
+  {
+    k = k + "";
+
+    regex = k;
+    regex = regex.replace(new RegExp(/[[\^$.|?+()\/]/g), "\\$&"); // убрал звездочку  экранируем управляющие символы кроме звездочки
+   // Log("regmmm", "info", regex);
+ //  regex = regex.replace(/\//gi, "\\/");
+    regex = regex.replace(/\*/gi, "[\\W\\w]*") + "$";
+    var regex = new RegExp(regex);
+    if (regex.test(url.trim())) {
+ //   if (url.indexOf(k) >= 0) {
+      setTimeout((regex, url,tabId) => { // адрес есть в списке
+        Log("url:", "error", url, tabId);
+        Log("regex:", "error", regex.toString(), tabId);
+        Log("селекторы", "error", selectors[k], tabId);
+        if (arrayPorts[tabId]) {
+          arrayPorts[tabId].postMessage({ setClassList: selectors[k] }); // установка переменной
+          arrayPorts[tabId].postMessage({ func: "removeElement" }); // запуск функции
+        }
+      }, 1000, regex, url,tabId);
+    }
+   }
+    
+}
+
+var tik = [];
+function checkUrl(Details) {
+  console.log(Details);
+  chrome.tabs.query({  // запрос всех вкладок
+    active: true,      // фильтруем нужные
+   currentWindow: true  // при переходе на отладчик - это мешает, меняется иекущее окно.
+  }, function (tabs) {    	// получаем отфильтрованные
+      if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
+        var currentUrl = tabs[0].url.toLowerCase();
+        if (test){
+          tik.push(Details.url);
+          timerWait(currentUrl, tabs[0].id);
+         // console.log("tik: " + currentUrl, Details.url);
+      }
+        else console.log("tik: " + currentUrl);// + "  Ж  " + Details.url);
+      //timerWait(currentUrl, tabs[0].id);
+    }
+  });
+}
+// приходит адрес вкладки на котором было событие
+// при этом загружается куча файлов, на этой вкладке
+// ждем секунду или... от последнего и срабатываем
+let timerWaitId = null;  
+function timerWait(currentUrl,tabId)
+{
+    clearTimeout(timerWaitId);
+  timerWaitId = setTimeout(function () {
+    let t = [];
+    t[0] = tik;
+   // var ttt = JSON.parse(JSON.stringify(tik));
+  //  Log("url:","info", currentUrl);
+    Log("Загрузка:", 'info', t, tabId);
+    
+   // var tt = JSON.stringify(tik);
+   // console.log(ttt);
+    tik = []; t = [];
+       // console.log("ark: " + currentUrl);   // вероятно загрузили все если интервал был меньше таймера
+                                             // ну иначе просто повторно запустим скрипт ??
+  }, 1000, tabId, currentUrl);                              
+}
+
 
 
 
@@ -47,7 +171,7 @@ chrome.webRequest.onCompleted.addListener(function (details) {
       }
     }
   );
-}, { urls: ['*://tv.yandex.ru/*period*'] }, ['responseHeaders']);
+}, { urls: ['*://tv.yandex.ru/*date*'] }, ['responseHeaders']);
 
 // старт загрузка background
 document.addEventListener('DOMContentLoaded', () => {
@@ -192,22 +316,80 @@ function delListener() {
 
 // Должен ловить закрытие popup.html
 // в popup.js  строка  var port = chrome.runtime.connect()
-chrome.runtime.onConnect.addListener(function (externalPort) {
-  externalPort.onDisconnect.addListener(function () {
-    console.log("Отключились от Popup.js  окно закрылось.")
-    // Do stuff that should happen when popup window closes here
-        // https://localforage.github.io/localForage/#data-api-setitem
-    localforage.setItem('ClearClassId_Lists', selectors/* listAll*/ ).then(function (value) {
-      // здесь все получено дальнейшие дествия.
-      Log("Сохранено в базу при закрытии","info",value);
-    }).catch(function (err) {
-      // Произошла ошибка
-      Log("Ошибка записи в базу","error",err);
-    });
-  })
-
-  console.log("Есть связь с popup.js...")
+let portPopup; // это порт от popup окна - нафиг он мне?
+let arrayPorts = {};
+chrome.runtime.onConnect.addListener(function (extPort) {
+  /**
+   * Ктото подключился сюда в background
+   * ставим порт на прослушку
+   */
+  extPort.onMessage.addListener(function (msg, port) { 
+    // если это был коонект от popup-окна, ставим прослушку на закрытие его
+    if (port.name == "popupConnectFlag") {  // порт от окна
+      if (msg.event == "OpenAndConnect") {  // сообщение чтоб включить ожидание disconnect (Закрытия)
+        portPopup = port;
+        port.onDisconnect.addListener(disconnectPort); // слушаем порт только от Popup
+        Log("Есть связь с popup.js...", "info")
+        console.log("Открыт popup", msg, port);
+      }
+    }
+    else if (port.name == "Content Script") {
+      if (msg.msg == "newTab") {
+        if (port)
+          if (port.sender)
+            if (port.sender.tab)
+              if (port.sender.tab.id) {
+                port.onDisconnect.addListener(disPort);
+                arrayPorts[port.sender.tab.id] = port;
+                Log("Поорт таб", "info", port.sender.tab.id);
+              //  checkUrl2(port.sender.url, port.sender.tab.id);  // проверять двойной вызов этот без обновления
+                // может вызывать только функцию коль она там уже есть ??
+              }
+        Log("Порты", "info", arrayPorts);
+      }
+    }
+    
+  });
+     Log("что то прилетело в back ","info", extPort);
+  // также после коннекта имеем порт для передачи сообщений в background
+  // if (extPort)
+  //   if (extPort.sender)
+  //     if (extPort.sender.tab)
+  //       if (extPort.sender.tab.id)
+  //       {
+    
+  //   extPort.onDisconnect.addListener(disPort);
+  //        // arrayPorts["p" + extPort.sender.tab.id] = extPort;
+  //         arrayPorts[extPort.sender.tab.id] = extPort;
+  //         Log("Поорт таб", "info", extPort.sender.tab.id);
+  //         checkUrl2(extPort.sender.url, extPort.sender.tab.id);
+  //          }
+  // Log("Порты", "info", arrayPorts);
+   
 })
+
+function disPort(extPort) {
+  Log("Поорт таб disconnect: ", "info", extPort.sender.tab.id);
+  if (arrayPorts[extPort.sender.tab.id]) {
+    delete arrayPorts[extPort.sender.tab.id];
+  }
+  Log("Порты делете", "info", arrayPorts);
+}
+
+function disconnectPort(port) {
+  if (port.name != "popupConnectFlag") return;
+  Log("Отключились от Popup.js  окно закрылось.","info")
+  // Do stuff that should happen when popup window closes here
+  // https://localforage.github.io/localForage/#data-api-setitem
+  localforage.setItem('ClearClassId_Lists', selectors/* listAll*/).then(function (value) {
+    // здесь все получено дальнейшие дествия.
+    Log("Сохранено в базу при закрытии", "info", port);//value);
+    console.log("Sender:", "info", port);
+  }).catch(function (err) {
+    // Произошла ошибка
+    Log("Ошибка записи в базу", "error", err);
+  });
+}
 
 
 //---------------------- создает окно  туда вписать локальный файл из расширения
@@ -235,7 +417,7 @@ chrome.runtime.onConnect.addListener(function (externalPort) {
 ////////////// chrome.runtime.sendMessage({type:'request_password'});
 
 //-----------------------
-function Log(message, color, obj) {
+function Log(message, color, obj = undefined,tabId = undefined) {
   // chrome-devtools:  chrome-extension:
   if (logEnabled == false) return;
 
@@ -266,18 +448,18 @@ function Log(message, color, obj) {
 
   if (obj) {
     var objmess = JSON.stringify(obj);//obj.message;
-     console.log("%cClearClassId : %c" + message, 'color: blue;font-weight: bold', "color:" + color, obj);
+    console.log("%cClearClassId : %c" + "[Bg]:" + message, 'color: blue;font-weight: bold', "color:" + color, obj);
     // objmess = objmess.replace(/['"]+/g, '');
-    chrome.tabs.executeScript({
-      code: "console.log('%cClearClassId : %c" +"12 "+ message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");",
+    chrome.tabs.executeScript(tabId,{
+      code: "console.log('%cClearClassId : %c" +"[Bg]:"+ message + "','color: blue;font-weight: bold', 'color: " + color + "'," + objmess + ");",
       allFrames: allFrames
       //    code: "var obja = JSON.parse('"+objmess+"'); console.log(obja);"
     }, catchLastErrorLog);
   }
   else {
-    console.log("%cClearClassId : %c" + message, 'color: blue;font-weight: bold', "color:" + color);
-    chrome.tabs.executeScript({
-      code: "console.log('%cClearClassId : %c" + message + "','color: blue;font-weight: bold','color: " + color + "');",
+    console.log("%cClearClassId : %c" + "[Bg]:" + message, 'color: blue;font-weight: bold', "color:" + color);
+    chrome.tabs.executeScript(tabId,{
+      code: "console.log('%cClearClassId : %c" + "[Bg]:" + message + "','color: blue;font-weight: bold','color: " + color + "');",
       allFrames: allFrames
     }, catchLastErrorLog);
   }

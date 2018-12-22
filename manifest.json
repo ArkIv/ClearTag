@@ -2,17 +2,20 @@
   "manifest_version": 2,
 
   "name": "Мое приложение удаляем баннеры",
-  "description": "Это приложение удаляет банеры с теле программы Яндекс.",
+  "description": "Это приложение удаляет ....",
+  "short_name": "Удаляем все",
   "version": "5.0",
   "author": "Arkadii",
-
+   "icons": {
+    "128": "icon/tomas-arad-heart (128).png",
+    "64": "icon/tomas-arad-heart (64).png",
+    "48": "icon/tomas-arad-heart (48).png",
+    "32": "icon/tomas-arad-heart (32).png",
+    "19": "icon/tomas-arad-heart (19).png",
+    "16": "icon/tomas-arad-heart (16).png"
+  },
   "browser_action": {
     "default_icon": {
-	"128":"icon/tomas-arad-heart (128).png",
-	"64":"icon/tomas-arad-heart (64).png",
-	"48":"icon/tomas-arad-heart (48).png",
-	"32":"icon/tomas-arad-heart (32).png",
-	"19":"icon/tomas-arad-heart (19).png",
 	"16":"icon/tomas-arad-heart (16).png"
   },
   "default_title": "Clear Class Id",
@@ -22,6 +25,7 @@
   "permissions": [
     "tabs",
     "webRequest",
+    "webRequestBlocking",
     "activeTab",
     "storage",
     "notifications",
@@ -31,5 +35,23 @@
    "background": {
         "scripts": ["background.js","js/localforage.min.js"],
         "persistent": true
-    }
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "http://*/*",
+          "https://*/*"          
+        ],
+        "js": [
+          "js/ani_content.js"
+        ],
+        "css": [
+          "css/ani_content.css"
+        ]
+      }
+    ],
+    "web_accessible_resources": [
+      "icon/clear_20.png"
+    ]
+    
 }

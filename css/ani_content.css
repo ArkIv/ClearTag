@@ -1,0 +1,9 @@
+#ClearClassId {
+  min-width: 20px;
+  min-height: 20px;
+  position: fixed;
+  left: 3px;
+  top: 3px;
+  z-index: 50000;
+  cursor: pointer;
+}
