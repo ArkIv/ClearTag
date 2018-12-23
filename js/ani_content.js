@@ -2,6 +2,8 @@ anicontent();
 function anicontent() {
 
     let logEnabled = true;
+    let сlassList = "";
+    let сlassListCommon = "";
     window.onload = function () {
         Log("Загружен контент скрипт");
         var body = document.body || document.getElementsByTagName('body')[0];
@@ -14,10 +16,21 @@ function anicontent() {
         img.setAttribute("width", "20");
         //img.setAttribute("alt", "Flower");
         div.appendChild(img);
+        div.addEventListener("click", onAClick);
+
         body.appendChild(div);
+
+        
+        function onAClick() {
+            if (сlassList) removeElements();
+            if (сlassListCommon) removeElementsCommon();
+        }
+
     }
 
-    let сlassList = "";
+   
+
+    
     function removeElements() {
         let arrClass = document.querySelectorAll(сlassList);
         let listErr = "";
@@ -34,6 +47,24 @@ function anicontent() {
         }
         let arrC = []; arrC["Clear"] = listErr ? listErr.slice(0, -1).split(",") : "не обнаружено";
         Log("Очистка выполнена.", "success", arrC);
+    }
+    
+    function removeElementsCommon() {
+        let arrClass = document.querySelectorAll(сlassListCommon);
+        let listErr = "";
+        for (let i = 0; i < arrClass.length; i++) {
+
+            try {
+                if (arrClass[i]) {
+                    arrClass[i].parentNode.removeChild(arrClass[i]);
+                    listErr += arrClass[i].className + ",";
+                }
+            } catch (e) {
+                Log("Ошибка общ. очистка", "error", e)
+            }
+        }
+        let arrC = []; arrC["Clear"] = listErr ? listErr.slice(0, -1).split(",") : "не обнаружено";
+        Log("Общ. очистка выполнена.", "success", arrC);
     }
 
 
@@ -66,12 +97,17 @@ function anicontent() {
         if (msg.setClassList) {
             сlassList = msg.setClassList;
         }
-            
+        if (msg.setClassListCommon) {
+            сlassListCommon = msg.setClassListCommon;
+        }   
         if (msg.func == "removeElement") {
-            Log("Принял на функциюсигнал", "info");
+            Log("Принял на функцию сигнал", "info");
             removeElements();
         }
-
+        if (msg.func == "removeElementCommon") {
+            Log("Принял на функцию сигнал", "info");
+            removeElementsCommon();
+        }
     });
 
     //================  ловим сообщение - одинаково и для content script и для расширения

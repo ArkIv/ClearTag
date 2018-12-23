@@ -41,6 +41,8 @@ function readBase() {
 // Создание базы
 function createBase() {
   selectors["!_____all_url_____!"] = ".content__adv-footer,.globalClass_ET";
+ // selectors['*://tv.yandex.ru/*date*'] = '.super-banner,.main-controller__adv-bottom,.footer,header,.recommended-top,.grid-chunk__column-box,\
+ // .grid-chunk__adv-wide,.content__adv-aside,.content__adv-footer';
   localforage.setItem('ClearClassId_Lists', selectors/* listAll*/).then(function (value) {
     // здесь все получено дальнейшие дествия.
     Log("Создана база", "info", value);
@@ -56,7 +58,7 @@ function updateTab(tabId, changeInfo,tab) {
   let timer = setTimeout((tab) => {
     if (changeInfo.status == "complete") {
       Log("Загрузили.....","info", tab.url);
-      checkUrl2(tab.url, tabId);             // проверять дойной вызов
+      checkUrl2(tab.url, tabId);             // проверять двойной вызов
       // может вызывать только функцию коль она там уже есть ??
       test = true;
       clearTimeout(timer);
@@ -80,9 +82,9 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 
 // Прослушиваем все http b https
-chrome.webRequest.onCompleted.addListener(function (Details) { 
- //  checkUrl2(Details.url.toLowerCase(),Details.tabId);
-}, { urls: ['http://*/*', 'https://*/*'] }, ['responseHeaders']);
+// chrome.webRequest.onCompleted.addListener(function (Details) { 
+//  //  checkUrl2(Details.url.toLowerCase(),Details.tabId);
+// }, { urls: ['http://*/*', 'https://*/*'] }, ['responseHeaders']);
 
 // поиск соответствия урл-вкладки с нашим списком урл.
 // если найдено в списке запустим функцию
@@ -105,34 +107,45 @@ function checkUrl2(url,tabId) {
         Log("regex:", "error", regex.toString(), tabId);
         Log("селекторы", "error", selectors[k], tabId);
         if (arrayPorts[tabId]) {
+          // arrayPorts[tabId].postMessage({ setClassListCommon: selectors["!_____all_url_____!"] }); // установка переменной
+          // arrayPorts[tabId].postMessage({ func: "removeElementCommon" }); // запуск функции
           arrayPorts[tabId].postMessage({ setClassList: selectors[k] }); // установка переменной
           arrayPorts[tabId].postMessage({ func: "removeElement" }); // запуск функции
         }
       }, 1000, regex, url,tabId);
     }
+    // все равно кто запускаем общие классы
+    setTimeout((tabId) => {
+      if (arrayPorts[tabId]) {
+        arrayPorts[tabId].postMessage({ setClassListCommon: selectors["!_____all_url_____!"] }); // установка переменной
+        arrayPorts[tabId].postMessage({ func: "removeElementCommon" }); // запуск функции
+      }
+    }, 1000, tabId);
+
    }
     
 }
 
 var tik = [];
-function checkUrl(Details) {
-  console.log(Details);
-  chrome.tabs.query({  // запрос всех вкладок
-    active: true,      // фильтруем нужные
-   currentWindow: true  // при переходе на отладчик - это мешает, меняется иекущее окно.
-  }, function (tabs) {    	// получаем отфильтрованные
-      if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
-        var currentUrl = tabs[0].url.toLowerCase();
-        if (test){
-          tik.push(Details.url);
-          timerWait(currentUrl, tabs[0].id);
-         // console.log("tik: " + currentUrl, Details.url);
-      }
-        else console.log("tik: " + currentUrl);// + "  Ж  " + Details.url);
-      //timerWait(currentUrl, tabs[0].id);
-    }
-  });
-}
+// function checkUrl(Details) {
+//   console.log(Details);
+//   chrome.tabs.query({  // запрос всех вкладок
+//     active: true,      // фильтруем нужные
+//    currentWindow: true  // при переходе на отладчик - это мешает, меняется иекущее окно.
+//   }, function (tabs) {    	// получаем отфильтрованные
+//       if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
+//         var currentUrl = tabs[0].url.toLowerCase();
+//         if (test){
+//           tik.push(Details.url);
+//           timerWait(currentUrl, tabs[0].id);
+//          // console.log("tik: " + currentUrl, Details.url);
+//       }
+//         else console.log("tik: " + currentUrl);// + "  Ж  " + Details.url);
+//       //timerWait(currentUrl, tabs[0].id);
+//     }
+//   });
+// }
+
 // приходит адрес вкладки на котором было событие
 // при этом загружается куча файлов, на этой вкладке
 // ждем секунду или... от последнего и срабатываем
@@ -177,127 +190,127 @@ chrome.webRequest.onCompleted.addListener(function (details) {
 document.addEventListener('DOMContentLoaded', () => {
   Log("есть DOMContentLoaded", "info", "test");
   readBase();
-  startBackground();
+  //startBackground();
 });
 
 // старт и перезагрузка прослушивателя
-function startBackground() {
+// function startBackground() {
 
-  localforage.getItem('ClearClassId_Lists').then(function (value) {
-    Log("Загрузили из базы:", "info", value);
-    startBackground2();
-  }).catch(function (err) {
-    // This code runs if there were any errors
-    console.log(err);
-  });
-}
-function startBackground2(){
-  // вызов функции чтения записанных данных масок адресов (savedList - callback функция)
-  getList("maskList", (savedList) => {
-    var urlList = "";
-    if (savedList) {
-      var arr = savedList.split(',');
-      //var arrC = []; arrC["Adresses"] = arr? arr:"нет адресов";// listErr? listErr.slice(0, -1).split(","):"не обнаружено";
-      Log("Загрузили адреса прослушки:", "info", arr);//savedList);
-      var urlfind = "<all_urls>";
-      if (savedList) urlfind = arr;
-      if (savedList == "urlfind") urlfind = "<all_urls>";
-      //chrome.webRequest.onSendHeaders.addListener(urlListener, {urls: urlfind},['requestHeaders']);
-      // Запуск прослушивателя после загрузки масок адресов
-      chrome.webRequest.onCompleted.addListener(urlListener, { urls: urlfind }, ['responseHeaders']);
-      // адреса подставлены и при совпадении будет вызываться  urlListener
-      // запуск в текущей вкладке
-      urlListener();
-    }
-  });
-} // end startBackground
+//   localforage.getItem('ClearClassId_Lists').then(function (value) {
+//     Log("Загрузили из базы:", "info", value);
+//     startBackground2();
+//   }).catch(function (err) {
+//     // This code runs if there were any errors
+//     console.log(err);
+//   });
+// }
+// function startBackground2(){
+//   // вызов функции чтения записанных данных масок адресов (savedList - callback функция)
+//   getList("maskList", (savedList) => {
+//     var urlList = "";
+//     if (savedList) {
+//       var arr = savedList.split(',');
+//       //var arrC = []; arrC["Adresses"] = arr? arr:"нет адресов";// listErr? listErr.slice(0, -1).split(","):"не обнаружено";
+//       Log("Загрузили адреса прослушки:", "info", arr);//savedList);
+//       var urlfind = "<all_urls>";
+//       if (savedList) urlfind = arr;
+//       if (savedList == "urlfind") urlfind = "<all_urls>";
+//       //chrome.webRequest.onSendHeaders.addListener(urlListener, {urls: urlfind},['requestHeaders']);
+//       // Запуск прослушивателя после загрузки масок адресов
+//       chrome.webRequest.onCompleted.addListener(urlListener, { urls: urlfind }, ['responseHeaders']);
+//       // адреса подставлены и при совпадении будет вызываться  urlListener
+//       // запуск в текущей вкладке
+//       urlListener();
+//     }
+//   });
+// } // end startBackground
 //--------------------------------
 // чтение записанных данных callback
-function getList(key, callback) {
-  chrome.storage.sync.get(key, (items) => {
-    // callback(chrome.runtime.lastError ? null : items[key]);
-    callback(items[key]);
-  });
-}
+// function getList(key, callback) {
+//   chrome.storage.sync.get(key, (items) => {
+//     // callback(chrome.runtime.lastError ? null : items[key]);
+//     callback(items[key]);
+//   });
+// }
 
 // чтение из хранилища
-function loadListClasses(key, callback) {
-  chrome.storage.sync.get(key, (items) => {
-    // callback(chrome.runtime.lastError ? null : items[key]);
-    callback(items[key]);
-  });
-}
+// function loadListClasses(key, callback) {
+//   chrome.storage.sync.get(key, (items) => {
+//     // callback(chrome.runtime.lastError ? null : items[key]);
+//     callback(items[key]);
+//   });
+// }
 // это вызовется при совпадении маски адреса в прослушивателе
-function urlListener(details) {
+// function urlListener(details) {
 
-  chrome.tabs.query({  // запрос всех вкладок
-    active: true,      // фильтруем нужные
-    currentWindow: true
-  }, function (tabs) {    	// получаем отфильтрованные
-    if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
-      var currenttab = tabs[0].url; // текущая активная-открытая вкладка
-      if (!details || details.url == currenttab) {  // если запрос от текущей страницы активной вкладки, details.url - адрес текущей загрузки
-        loadListClasses("classList", (savedList) => {   // читаем из хранилища
-          // получили список из хранилища
-          //  var classBufer = 'var divClassList = document.createElement("div");divClassList.id="ClearClassesId";divClassList.innerHTML="' + savedList + '";';
-          var classBuffer = 'var ClearClassBuffer = "' + savedList + '";';
+//   chrome.tabs.query({  // запрос всех вкладок
+//     active: true,      // фильтруем нужные
+//     currentWindow: true
+//   }, function (tabs) {    	// получаем отфильтрованные
+//     if (tabs[0]) {      // поскольку фильтр по Active то вероятно вкладка одна
+//       var currenttab = tabs[0].url; // текущая активная-открытая вкладка
+//       if (!details || details.url == currenttab) {  // если запрос от текущей страницы активной вкладки, details.url - адрес текущей загрузки
+//         loadListClasses("classList", (savedList) => {   // читаем из хранилища
+//           // получили список из хранилища
+//           //  var classBufer = 'var divClassList = document.createElement("div");divClassList.id="ClearClassesId";divClassList.innerHTML="' + savedList + '";';
+//           var classBuffer = 'var ClearClassBuffer = "' + savedList + '";';
 
-          loadListClasses("idList", (savedList) => {
-            //  var idBuffer ='var divIdList = document.createElement("div");divIdList.id="ClearClassesIdList";divIdList.innerHTML="' + savedList + '";';
-            var idBuffer = 'var ClearIdBuffer = "' + savedList + '";';
-            // получили список из хранилища
-            uploadElement(tabs[0], classBuffer + idBuffer);
-          });
-          // if (savedList) {
-          //   uploadElement(details, savedList);   
-          // }
-          // else
-          //   uploadElement(details, "");
+//           loadListClasses("idList", (savedList) => {
+//             //  var idBuffer ='var divIdList = document.createElement("div");divIdList.id="ClearClassesIdList";divIdList.innerHTML="' + savedList + '";';
+//             var idBuffer = 'var ClearIdBuffer = "' + savedList + '";';
+//             // получили список из хранилища
+//             uploadElement(tabs[0], classBuffer + idBuffer);
+//           });
+//           // if (savedList) {
+//           //   uploadElement(details, savedList);   
+//           // }
+//           // else
+//           //   uploadElement(details, "");
 
-        });
-      }
-    }
-  });
-}
+//         });
+//       }
+//     }
+//   });
+// }
 
 
 
 
 // Создаем и загружаем элемент с данными
-function uploadElement(Tab, savedList) {
-  setTimeout(function () {
-    chrome.tabs.executeScript(Tab.id, {
-      //  code: 'var divClasses = document.createElement("div");divClasses.id="ClearClassesId";divClasses.innerHTML="' + savedList + '";'
-      code: savedList, allFrames: allFrames
-    },
-      () => {
-        if (chrome.runtime.lastError) {
-          Log("не загрузить списки", "error", chrome.runtime.lastError);
-        } else {
-          Log("Списки загружены-3", "success","инициатор: "+Tab.url);
-         // Log("url (на что среагировал):" + details.url, "success");
-          uploadScript(Tab);
-        }
-      }
+// function uploadElement(Tab, savedList) {
+//   setTimeout(function () {
+//     chrome.tabs.executeScript(Tab.id, {
+//       //  code: 'var divClasses = document.createElement("div");divClasses.id="ClearClassesId";divClasses.innerHTML="' + savedList + '";'
+//       code: savedList, allFrames: allFrames
+//     },
+//       () => {
+//         if (chrome.runtime.lastError) {
+//           Log("не загрузить списки", "error", chrome.runtime.lastError);
+//         } else {
+//           Log("Списки загружены-3", "success","инициатор: "+Tab.url);
+//          // Log("url (на что среагировал):" + details.url, "success");
+//           uploadScript(Tab);
+//         }
+//       }
 
-    );
+//     );
 
-  }, 5000); // таймер дадим время загрузиться скриптам - если успеют
-}
+//   }, 5000); // таймер дадим время загрузиться скриптам - если успеют
+// }
 
 
 // старт загрузки файла скрипта после установки переменных т.е. создания дива
-function uploadScript(Tab) {
-  chrome.tabs.executeScript(Tab.id, { file: "deletetimer.js", allFrames: allFrames},
-    () => {
-      if (chrome.runtime.lastError) {
-        Log("error: не загрузился скрипт \"deletetimer\"", "error", chrome.runtime.lastError);
-      } else {
-        Log("скрипт \"deletetimer\" загружен", "success");
-      }
-    }
-  );
-}
+// function uploadScript(Tab) {
+//   chrome.tabs.executeScript(Tab.id, { file: "deletetimer.js", allFrames: allFrames},
+//     () => {
+//       if (chrome.runtime.lastError) {
+//         Log("error: не загрузился скрипт \"deletetimer\"", "error", chrome.runtime.lastError);
+//       } else {
+//         Log("скрипт \"deletetimer\" загружен", "success");
+//       }
+//     }
+//   );
+// }
 
 
 function catchLastError() {
@@ -309,10 +322,10 @@ function catchLastError() {
 }
 
 //--------------------------------
-function delListener() {
-  chrome.webRequest.onCompleted.removeListener(urlListener);
-  startBackground();
-}
+// function delListener() {
+//   chrome.webRequest.onCompleted.removeListener(urlListener);
+//   startBackground();
+// }
 
 // Должен ловить закрытие popup.html
 // в popup.js  строка  var port = chrome.runtime.connect()
