@@ -1,13 +1,10 @@
 // Copyright (c) 2018 The ANI Software Authors. All rights reserved.
-
+//"use strict";
 var port = chrome.runtime.connect({ name: "popupConnectFlag" });
 port.postMessage({ event: "OpenAndConnect" });
 
 var bgPage = chrome.extension.getBackgroundPage();
 var CurrentSelectUrl = "";
-//bgPage.selectors
-//var selectors = {};
-//selectors["ClearClassId"] = [];
 
 // на иконке текст 4 символа
 chrome.browserAction.setBadgeText({ text: 'Ура!' });
@@ -42,61 +39,47 @@ document.addEventListener('DOMContentLoaded', () => {
   //console.log("inner",inf.innerHTML);
 
 });
-function clickButton() {
-  var script = '\
-  var u = document.getElementsByClassName("super-banner");\
-  if(u[0])u[0].remove();\
-  u = document.getElementsByClassName("grid-chunk__column-box");\
-  if(u[0])u[0].remove();\
-  u = document.getElementsByClassName("main-controller__adv-bottom");\
-  if(u[0])u[0].remove();\
-    u = document.getElementsByClassName("footer");\
-  if(u[0])u[0].remove();\
-    u = document.getElementsByClassName("header");\
-  if(u[0])u[0].remove();\
-  \
-  u = document.getElementsByClassName("globalClass_ET");\
-   if(u[0])u[0].remove();\
-   \
-  u = document.getElementsByClassName("recommended-top");\
-  if(u[0])u[0].remove();';
-
-  chrome.tabs.executeScript({
-    code: script
-  });
-}
 
 /**  startClearClassId это срабатывает после загрузки страницы popup
  * 
  */
 function startClearClassId() {
 
-//===============================
+  //===============================
   var selectUrl = document.querySelector(".selectUrl");
   var selectClass = document.querySelector(".selectClass");
+  var selectNoScript = document.querySelector(".selectNoScript");
 
   //var addrCurrent = document.querySelector(".addrCurrent");
   var tabHeader_1_4 = document.getElementById("tabHeader_1_4"); // вкладка тест
+  var tab1 = document.getElementById("tab-1"); // Urls
   var tab2 = document.getElementById("tab-2"); // Селекторы
   tab2.style.visibility = "hidden";
-
+  var tab3 = document.getElementById("tab-3"); // No Scripts
+  tab3.style.visibility = "hidden";
   let textOptionUrl = document.querySelector(".textOptionUrl");
   let textOptionClass = document.querySelector(".textOptionClass");
+  let textOptionNoScript = document.querySelector(".textOptionNoScript");
   // let textOptionId = document.querySelector(".textOptionId");
   let addrCurrentTooltip = document.querySelector(".addrCurrentTooltip");
   let addrCurrentSpan = document.querySelector(".addrCurrentSpan");
     
-//====================================
+  //====================================
 
+  // Загрузи при старте URLs
   let keys = Object.keys(bgPage.selectors);
   Log("Прочитали селекторы:", "info", keys);
   selectUrl.innerHTML = "";
 
   for (let i = 0; i < keys.length; i++) {
-    addSelectUrl(false,keys[i]); // false не устанавливать фокус
+    //addSelectUrl(false, keys[i]); // false не устанавливать фокус
+    let opt = document.createElement("option");
+    opt.innerHTML = keys[i];
+    selectUrl.appendChild(opt);
+    sortetSelect(selectUrl, true); // true Записать
     
   }
-   // это к Tab - основной
+  // это к Tab - основной
   var jsTriggers = document.querySelectorAll('.js-tab-trigger');
   jsTriggers.forEach(function (trigger) {
     trigger.addEventListener('click', function () {
@@ -128,13 +111,7 @@ function startClearClassId() {
       content.classList.add('active');
     });
   });
-  /////////////////chrome.runtime.sendMessage({type:'request_password'});
-  // window.onbeforeunload = function (event) { 
-  //   //return (true ? "Измененные данные не сохранены. Закрыть страницу?" : null); 
-  //   // в новых это уже не работает выводится стандартный от хрома  отправить null без предупреждения
-  //   event.returnValue = "Измененные данные не сохранены. Закрыть страницу?"; 
-  //   return "Измененные данные не сохранены. Закрыть страницу?"; 
-  // } 
+ 
   // сгенерируем событие   проверка кто вызвал event.isTrusted = true  если был человечий клик https://learn.javascript.ru/dispatch-events
   var nabclick = document.querySelector(".js-tab-trigger[data-tab='4']");
   var event = new Event("click");
@@ -145,29 +122,39 @@ function startClearClassId() {
   //
   var buttonInsertUrl = document.querySelector(".buttonInsertUrl");
   var buttonInsertClass = document.querySelector(".buttonInsertClass");
+  let buttonInsertNoScript = document.querySelector(".buttonInsertNoScript");
 
   buttonInsertUrl.addEventListener('click', () => {
-    addSelectUrl(true);
+    textOptionUrl.value = textOptionUrl.value.trim();
+    if (textOptionUrl.value == "") return;
+    addSelectUrl(textOptionUrl.value);
+   // saveSelectors();
   });
   buttonInsertClass.addEventListener('click', () => {
+    textOptionClass.value = textOptionClass.value.trim();
+    if (textOptionClass.value == "") return;
     addSelectClass(true);
     saveSelectors();
   });
-
+  buttonInsertNoScript.addEventListener('click', () => {
+    textOptionNoScript.value = textOptionNoScript.value.trim();
+    if(textOptionNoScript.value == "") return;
+    addSelectNoScript(true);
+    saveSelectors();
+  });
  
   tabHeader_1_4.addEventListener("click", () => {
-    isSelectedTab2();
+   // isSelectedTab2();
   });
   // удаление из списка при дваойном клике  
   // двойной клик удаляем текст из поля выбранного URL
 
   selectUrl.addEventListener('dblclick', removeOptionUrl);
   selectClass.addEventListener('dblclick', removeOptionClass);
-
-
+  selectNoScript.addEventListener('dblclick', removeOptionNoScript);
   function removeOptionUrl(e) {
     if (e.target.nodeName.toLowerCase() == "option") {
-     // bgPage.selectors[CurrentSelectUrl] = selectToStr(selectClass);
+      // bgPage.selectors[CurrentSelectUrl] = selectToStr(selectClass);
       CurrentSelectUrl = selectUrl.options[selectUrl.selectedIndex].value.trim();
       if (CurrentSelectUrl == "!_____all_url_____!") {
         selectUrl.style.backgroundColor = "yellow";
@@ -192,6 +179,13 @@ function startClearClassId() {
       saveSelectors(); // Запись
     }
   }
+  function removeOptionNoScript(e) {
+    if (e.target.nodeName.toLowerCase() == "option") {
+      textOptionNoScript.value = e.target.value;
+      e.target.remove();
+      saveSelectors(); // Запись
+    }
+  }
   // выделение  и определение адреса при выборе из списка
   selectUrl.addEventListener('change', () => {
     CurrentSelectUrl = selectUrl.options[selectUrl.selectedIndex].value.trim();
@@ -205,27 +199,40 @@ function startClearClassId() {
   function isSelectedTab2(Key) {
     if (CurrentSelectUrl == "") {
       tab2.style.visibility = "hidden";
-     } else {
+      tab3.style.visibility = "hidden";
+    } else {
       tab2.style.visibility = "visible";
+      tab3.style.visibility = "visible";
+      tab2.innerHTML = "Селекторы (0)";
+      tab3.innerHTML = "No scripts (0)"; 
+      selectClass.innerHTML = ""; // перед добавлением  удалим все Option
+      selectNoScript.innerHTML = ""; // перед добавлением  удалим все Option
       if (Key) {
-        let str = bgPage.selectors[Key];
+        // если ключа нет в базе то создадим с пустыми ключами
+        if (!bgPage.selectors[Key]) bgPage.selectors[Key] = { "elements": "", "noscripts": "" };
+
+        let str = bgPage.selectors[Key].elements;
         if (str) {
           let arr = str.split(',');
-          selectClass.innerHTML = ""; // перед добавлением  удалим все Option
           for (let i = 0; i < arr.length; i++) {
-            addSelectClass(false,arr[i])
+            addSelectClass(false, arr[i])
+            tab2.innerHTML = "Селекторы ("+(i+1)+")";
           }
-     //     sortetSelect(selectClass);
-          Log("Key:", "Blue", str);
+          //     sortetSelect(selectClass);
+          Log("elements:", "info", str);
         }
-        else   // раз нет ключей очистим все option
-          selectClass.innerHTML = "";
+        let str2 = bgPage.selectors[Key].noscripts;
+        if (str2) {
+          let arr = str2.split(',');
+          for (let i = 0; i < arr.length; i++) {
+            addSelectNoScript(false, arr[i])
+            tab3.innerHTML = "No scripts (" + (i + 1) + ")";
+          }
+          Log("noscripts:", "info", str2);
+        }
       }
-
-     
-
     }
-  };
+  }
 
   //onclick="insertOption();"
   // при активации окна считываем с активной вкладки адрес и подставлякм в поле ввода
@@ -234,56 +241,69 @@ function startClearClassId() {
     currentWindow: true
   }, function (tabs) {    	// получаем отфильтрованные
     if (tabs[0]) {
-      
-      textOptionUrl.value = getFilterUrl(tabs[0].url);// decodeURIComponent(tabs[0].url);
+      let url = tabs[0].url.toLowerCase().trim();
+      let idx = url.indexOf("&");
+      if (idx >= 0)
+        url = url.substr(0, idx) + "*";
+      textOptionUrl.value = url;
     }
   });
 
-  // фильтруем строку до параметров если они есть
-  function getFilterUrl(url) {
-    let idx = url.indexOf("&");
-    if (idx >= 0)
-      url = url.substr(0, idx);
-    return decodeURIComponent(url);
-  }
-
-
   // добавление строки в Select
-  function addSelectUrl(focus,txt) {
-    txt = txt ? txt : textOptionUrl.value;
-    txt = txt.toLowerCase().trim();
-    
-    if (!isOptionText(selectUrl, txt))// проверка на существовании в списке Select
+  function addSelectUrl(txt) {
+    txt = decodeURIComponent(txt).toLowerCase().trim();
+    let res = isOptionText(selectUrl, txt) 
+    if (res == false)// проверка на существовании в списке Select
     {
-    //  console.log("111111111111111111111111");
       let opt = document.createElement("option");
-      opt.innerHTML = decodeURIComponent(txt);
+      opt.innerHTML =txt;
       selectUrl.appendChild(opt);
       sortetSelect(selectUrl, true); // true Записать
-      
-      if (focus == true){
-        selectUrl.selectedIndex = opt.index;
+
+      selectUrl.selectedIndex = opt.index;  
         selectUrl.focus();
         CurrentSelectUrl = selectUrl.options[selectUrl.selectedIndex].value.trim();
-        addrCurrentTooltip.innerHTML = CurrentSelectUrl; // вплываем
-        addrCurrentSpan.innerHTML = CurrentSelectUrl;  // показываем
-        isSelectedTab2(CurrentSelectUrl);
-      }
-      
+    }
+    else {
+      CurrentSelectUrl = res.value.trim();
+    }
+    addrCurrentTooltip.innerHTML = CurrentSelectUrl; // вплываем
+    addrCurrentSpan.innerHTML = CurrentSelectUrl;  // показываем
+    isSelectedTab2(CurrentSelectUrl);
+    }
+  
+  //
+  function addSelectNoScript(focus, txt) {
+    txt = txt ? txt : textOptionNoScript.value;
+    txt = decodeURIComponent(txt).toLowerCase().trim();
+    let res = isOptionText(selectNoScript, txt)
+    if (res == false)// проверка на существовании в списке Select
+    {
+      //  console.log("111111111111111111111111");
+      let opt = document.createElement("option");
+      opt.innerHTML = txt;
+      selectNoScript.appendChild(opt);
+      sortetSelect(selectNoScript, true); // true Записать
 
+      if (focus == true) {
+        selectNoScript.selectedIndex = opt.index;
+        selectNoScript.focus();
+
+      }
     }
   }
+  //
   function addSelectClass(focus, txt) {
     txt = txt ? txt : textOptionClass.value;
     txt = txt.trim();
-    if (!isOptionText(selectClass, txt))// проверка на существовании в списке Select
+    let res = isOptionText(selectClass, txt)
+    if (res == false)// проверка на существовании в списке Select
     {
       let opt = document.createElement("option");
-      if (txt[0] == '.') opt.classList.add("optionClass");
-      else if (txt[0] == '#') opt.classList.add("optionId");
-      else opt.classList.add("optionTag");
-     // opt.selected = true;
-      opt.innerHTML = txt; //strip(txt);
+      if (txt[0] == '.') opt.classList.add("optionClass");  // для подсветки
+      else if (txt[0] == '#') opt.classList.add("optionId"); // для подсветки
+      else opt.classList.add("optionTag");  // для подсветки
+      opt.innerHTML = txt;
       selectClass.appendChild(opt);
       sortetSelect(selectClass);  // save true - записать
       if (focus == true) {    // если нет focus вообще значит надо фокусировать
@@ -294,6 +314,7 @@ function startClearClassId() {
       
     }
   }
+
   // TODO: надо вывести из автозапуска
   sortetSelect(selectUrl);
   // сортировка подаваемого Select объекта
@@ -307,7 +328,7 @@ function startClearClassId() {
       sorted[sorted.length - 1].element = nodes[0];
       obj.removeChild(nodes[0]);
     }
-    sorted = sorted.sort(); // для цифр (a,b) => { return a - b;}
+    sorted = sorted.sort(); // для цифр sort(a,b) => { return a - b;}
     for (var i = 0; i < len; i++) {
       obj.appendChild(sorted[i].element);
     }
@@ -341,9 +362,11 @@ function startClearClassId() {
         setTimeout(function () {
           obj.style.backgroundColor = "white";
         }, 50);
-        return true;
+        return obj.options[i];
       }
+      
     }
+    return false;
   }
   // преобразуем список в строку с запятыми
   function getListString(List) {
@@ -382,8 +405,10 @@ function startClearClassId() {
  // selectClass.addEventListener('onpaste', saveSelectors);
   function saveSelectors() {
     if (CurrentSelectUrl == "") return;
-    bgPage.selectors[CurrentSelectUrl] = selectToStr(selectClass);
-    Log("Запись:", "info", bgPage.selectors);
+    bgPage.selectors[CurrentSelectUrl].elements = selectToStr(selectClass) ;
+    bgPage.selectors[CurrentSelectUrl].noscripts = selectToStr(selectNoScript) ; 
+    Log("Запись 1:", "info", bgPage.selectors);
+  //   Log("Запись 2:", "info", bgPage.selectorsbuf);
    }
   // преобразуем список в строку с запятыми
   function selectToStr(Select) {

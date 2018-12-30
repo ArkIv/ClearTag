@@ -3,7 +3,8 @@ var logEnabled = true;
 var allFrames = false;
 // selectors - здесь будут храниться все данные между чтением и записью в базу
 // работать через  var bgPage = chrome.extension.getBackgroundPage();
-var selectors = {};
+var selectors = {"elements":"","script":"","noscripts":""};
+//var selectors2 = {urls:{}};
 //===================== слушаем порт
 // chrome.runtime.onConnect.addListener(function (port) {
 //   //console.assert(port.name == "knockknock");
@@ -24,26 +25,23 @@ var selectors = {};
 // читать базу после загрузки дерева и скрипта для базы соответственно
 function readBase() {
   localforage.getItem('ClearClassId_Lists').then(function (value) {
-    // This code runs once the value has been loaded
-    // from the offline store.
+    //Загрузили из базы
     if (!value) {
-      createBase();
+      createBase(); // если нифига нет создадим новую
     }
     else {
       selectors = value;
-      console.log("Прочитано из базы", value);
+      Log("Прочитано из базы","info", value);
     }
   }).catch(function (err) {
-    // This code runs if there were any errors
-    console.log("При чтениииз базы", err);
+    Log("Ошибка при чтениииз базы","error", err);
   });
 }
 // Создание базы
 function createBase() {
-  selectors["!_____all_url_____!"] = ".content__adv-footer,.globalClass_ET";
- // selectors['*://tv.yandex.ru/*date*'] = '.super-banner,.main-controller__adv-bottom,.footer,header,.recommended-top,.grid-chunk__column-box,\
- // .grid-chunk__adv-wide,.content__adv-aside,.content__adv-footer';
-  localforage.setItem('ClearClassId_Lists', selectors/* listAll*/).then(function (value) {
+  if (!selectors["!_____all_url_____!"]) selectors["!_____all_url_____!"] = { "elements": ".content__adv-footer,.globalClass_ET" };
+
+  localforage.setItem('ClearClassId_Lists', selectors).then(function (value) {
     // здесь все получено дальнейшие дествия.
     Log("Создана база", "info", value);
   }).catch(function (err) {
@@ -90,40 +88,37 @@ chrome.webRequest.onBeforeRequest.addListener(
 // если найдено в списке запустим функцию
 function checkUrl2(url,tabId) {
   if (selectors)
-  for(var k in selectors)
+  for(var k in selectors) // перебираем ключи с URLs
   {
     k = k + "";
 
     regex = k;
     regex = regex.replace(new RegExp(/[[\^$.|?+()\/]/g), "\\$&"); // убрал звездочку  экранируем управляющие символы кроме звездочки
-   // Log("regmmm", "info", regex);
- //  regex = regex.replace(/\//gi, "\\/");
-    regex = regex.replace(/\*/gi, "[\\W\\w]*") + "$";
+    regex = regex.replace(/\*/gi, "[\\W\\w]*") + "$"; //создаем regexp на основе оставшихся звездочек
     var regex = new RegExp(regex);
     if (regex.test(url.trim())) {
  //   if (url.indexOf(k) >= 0) {
       setTimeout((regex, url,tabId) => { // адрес есть в списке
         Log("url:", "error", url, tabId);
         Log("regex:", "error", regex.toString(), tabId);
-        Log("селекторы", "error", selectors[k], tabId);
+        Log("селекторы", "error", selectors[k].elements, tabId);
         if (arrayPorts[tabId]) {
           // arrayPorts[tabId].postMessage({ setClassListCommon: selectors["!_____all_url_____!"] }); // установка переменной
           // arrayPorts[tabId].postMessage({ func: "removeElementCommon" }); // запуск функции
-          arrayPorts[tabId].postMessage({ setClassList: selectors[k] }); // установка переменной
+          arrayPorts[tabId].postMessage({ setClassList: selectors[k].elements }); // установка переменной
           arrayPorts[tabId].postMessage({ func: "removeElement" }); // запуск функции
         }
       }, 1000, regex, url,tabId);
     }
-    // все равно кто запускаем общие классы
-    setTimeout((tabId) => {
+
+    }
+      // все равно кто запускаем общие классы
+      setTimeout((tabId) => {
       if (arrayPorts[tabId]) {
-        arrayPorts[tabId].postMessage({ setClassListCommon: selectors["!_____all_url_____!"] }); // установка переменной
+        arrayPorts[tabId].postMessage({ setClassListCommon: selectors["!_____all_url_____!"].elements }); // установка переменной
         arrayPorts[tabId].postMessage({ func: "removeElementCommon" }); // запуск функции
       }
     }, 1000, tabId);
-
-   }
-    
 }
 
 var tik = [];
@@ -394,9 +389,9 @@ function disconnectPort(port) {
   Log("Отключились от Popup.js  окно закрылось.","info")
   // Do stuff that should happen when popup window closes here
   // https://localforage.github.io/localForage/#data-api-setitem
-  localforage.setItem('ClearClassId_Lists', selectors/* listAll*/).then(function (value) {
+  localforage.setItem('ClearClassId_Lists', selectors).then(function (value) {
     // здесь все получено дальнейшие дествия.
-    Log("Сохранено в базу при закрытии", "info", port);//value);
+    Log("Сохранено в базу при закрытии", "info", value)// port);
     console.log("Sender:", "info", port);
   }).catch(function (err) {
     // Произошла ошибка
@@ -436,27 +431,13 @@ function Log(message, color, obj = undefined,tabId = undefined) {
 
   color = color || "black";
   switch (color) {
-    case "success":
-      color = "Green";
-      break;
-
-    case "ok":
-      color = "Green";
-      break;
-    case "info":
-      color = "DodgerBlue";
-      break;
-    case "error":
-      color = "Red";
-      break;
-    case "err":
-      color = "Red";
-      break;
-    case "warning":
-      color = "Orange";
-      break;
-    default:
-      color = color;
+    case "success": color = "Green"; break;
+    case "ok": color = "Green"; break;
+    case "info": color = "DodgerBlue"; break;
+    case "error": color = "Red"; break;
+    case "err": color = "Red"; break;
+    case "warning": color = "Orange"; break;
+    default: color = color;
   }
 
   if (obj) {

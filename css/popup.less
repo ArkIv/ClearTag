@@ -25,7 +25,7 @@ html {
     display: flex;
     justify-content: space-between;
   }
-#maskList,#classList,#idList,.selectUrl,.selectClass,.selectId{
+#maskList,#classList,#idList,.selectUrl,.selectClass,.selectNoScript{
      resize: vertical; /* Запрещаем изменять размер */
     width: @tabsWidth - (@areaPaddingHor*2) - 2;
     padding: 7px @areaPaddingHor;
@@ -36,7 +36,7 @@ html {
     margin: 0;
     overflow: auto;
 }
-.selectUrl,.selectClass,.selectId{
+.selectUrl,.selectClass,.selectNoScript{
    width: @tabsWidth - 2;
    height: @select;
 }
@@ -203,6 +203,6 @@ background-color: #ffe694;
 //    width: @tabsWidth;
 //    height: @select;
 // }
-.textOptionUrl,.textOptionClass,.textOptionId{
+.textOptionUrl,.textOptionClass,.textOptionNoScript{
    width: 100%;
 }

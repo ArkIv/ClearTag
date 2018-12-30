@@ -21,7 +21,7 @@ h1 {
 #idList,
 .selectUrl,
 .selectClass,
-.selectId {
+.selectNoScript {
   resize: vertical;
   /* Запрещаем изменять размер */
   width: 378px;
@@ -33,7 +33,7 @@ h1 {
 }
 .selectUrl,
 .selectClass,
-.selectId {
+.selectNoScript {
   width: 398px;
   height: 200px;
 }
@@ -177,6 +177,6 @@ h1 {
 }
 .textOptionUrl,
 .textOptionClass,
-.textOptionId {
+.textOptionNoScript {
   width: 100%;
 }

@@ -8,4 +8,14 @@ let textInfo = `
           http://127.0.0.1/*<br>
           *://mail.google.com/*<br>
           &lt;all_urls&gt;  все адреса <br>
+
+
+в селекторах:
+содержит
+div[class*="col-"]
+начинается
+div[class^="col-"]
+Заканчивается
+div[class$="-col"]
+
 `;
