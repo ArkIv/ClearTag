@@ -18,7 +18,7 @@
     "default_icon": {
 	"16":"icon/tomas-arad-heart (16).png"
   },
-  "default_title": "Clear Class Id",
+  "default_title": "Clear Elements DOM",
   "default_popup": "popup.html",
   "options_page": "options.html"
   },
